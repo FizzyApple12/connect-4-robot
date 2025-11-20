@@ -75,16 +75,14 @@
             "-DPICO_SDK_PATH=/build/pico-sdk"
             "-DCMAKE_C_COMPILER=${pkgs.gcc-arm-embedded}/bin/arm-none-eabi-gcc"
             "-DCMAKE_CXX_COMPILER=${pkgs.gcc-arm-embedded}/bin/arm-none-eabi-g++"
-            "-DPICOTOOL_DIR=/build/picotool"
           ];
 
           buildPhase = ''
-            ls /build
             cmake --build . --target desk_firmware
           '';
 
           installPhase = ''
-            mkdir $out
+            mkdir -p $out
             cp /build/source/build/* -r $out
           '';
 

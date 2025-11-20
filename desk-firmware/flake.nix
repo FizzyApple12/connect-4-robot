@@ -16,6 +16,7 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        pico-sdk = (pkgs.callPackage ./pico-sdk.nix {});
         picotool = pkgs.picotool.overrideDerivation (oldAttrs: {
           version = "2.2.0-a4";
           src = pkgs.fetchFromGitHub {
@@ -28,21 +29,21 @@
       in
       {
         devShells.default = pkgs.mkShell rec {
-          nativeBuildInputs = with pkgs; [
-            cmake
-          ];
-          buildInputs = with pkgs; [
-            clang
-            llvmPackages.bintools
-            bash
+          nativeBuildInputs = [
+            pkgs.git
+            pkgs.cmake
+            pkgs.gcc-arm-embedded
+            pkgs.python3
+            picotool
+            pico-sdk
           ];
 
-          LIBCLANG_PATH = pkgs.lib.makeLibraryPath [ pkgs.llvmPackages_latest.libclang.lib ];
+          # LIBCLANG_PATH = pkgs.lib.makeLibraryPath [ pkgs.llvmPackages_latest.libclang.lib ];
 
-          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (buildInputs ++ nativeBuildInputs);
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath nativeBuildInputs;
         };
 
-        packages.default = pkgs.pkgsCross.arm-embedded.stdenv.mkDerivation (finalAttrs: rec {
+        packages.default = pkgs.pkgsCross.arm-embedded.stdenv.mkDerivation (finalAttrs: {
           pname = "desk-firmware";
           version = "1.0.0";
 
@@ -51,28 +52,21 @@
               root = ./.;
               fileset = ./.;
             })
-            (pkgs.fetchFromGitHub {
-              name = "pico-sdk";
-              owner = "raspberrypi";
-              repo = "pico-sdk";
-              rev = "a1438dff1d38bd9c65dbd693f0e5db4b9ae91779";
-              sha256 = "sha256-wfe1tRaURH8aP5nBYLrzT3vqQcUV5CT9bQD0gulEe9o=";
-              deepClone = true;
-            })
           ];
 
           sourceRoot = "source";
 
-          nativeBuildInputs = with pkgs; [
-            git
-            pkgsCross.arm-embedded.cmake
-            gcc-arm-embedded
-            python3
+          nativeBuildInputs = [
+            pkgs.git
+            pkgs.pkgsCross.arm-embedded.cmake
+            pkgs.gcc-arm-embedded
+            pkgs.python3
             picotool
+            pico-sdk
           ];
 
           cmakeFlags = [
-            "-DPICO_SDK_PATH=/build/pico-sdk"
+            "-DPICO_SDK_PATH=${pico-sdk}/lib/pico-sdk"
             "-DCMAKE_C_COMPILER=${pkgs.gcc-arm-embedded}/bin/arm-none-eabi-gcc"
             "-DCMAKE_CXX_COMPILER=${pkgs.gcc-arm-embedded}/bin/arm-none-eabi-g++"
           ];

@@ -6,15 +6,27 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = {
-    nixpkgs,
-    flake-utils,
-    ...
-  }:
+  outputs =
+    {
+      nixpkgs,
+      flake-utils,
+      ...
+    }:
     flake-utils.lib.eachDefaultSystem (
-      system: let
+      system:
+      let
         pkgs = nixpkgs.legacyPackages.${system};
-      in {
+        picotool = pkgs.picotool.overrideDerivation (oldAttrs: {
+          version = "2.2.0-a4";
+          src = pkgs.fetchFromGitHub {
+            owner = "raspberrypi";
+            repo = "picotool";
+            rev = "25aa087b2c517b4901874a99536e869d4d27b678";
+            hash = "sha256-kIB/ODAvwWWoAQDq2cMiFuNWjzzLgPuRQv0NluWYU+Y=";
+          };
+        });
+      in
+      {
         devShells.default = pkgs.mkShell rec {
           nativeBuildInputs = with pkgs; [
             cmake
@@ -25,7 +37,7 @@
             bash
           ];
 
-          LIBCLANG_PATH = pkgs.lib.makeLibraryPath [pkgs.llvmPackages_latest.libclang.lib];
+          LIBCLANG_PATH = pkgs.lib.makeLibraryPath [ pkgs.llvmPackages_latest.libclang.lib ];
 
           LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (buildInputs ++ nativeBuildInputs);
         };
@@ -34,7 +46,6 @@
           pname = "desk-firmware";
           version = "1.0.0";
 
-          # set(PICO_SDK_FETCH_FROM_GIT on)
           srcs = [
             (pkgs.lib.fileset.toSource {
               root = ./.;
@@ -45,56 +56,42 @@
               owner = "raspberrypi";
               repo = "pico-sdk";
               rev = "a1438dff1d38bd9c65dbd693f0e5db4b9ae91779";
-              sha256 = "sha256-q9epnsTclLrPjZxCIR6YGcCZyL5NN3ToIKmLSE5MXQM=";
+              sha256 = "sha256-wfe1tRaURH8aP5nBYLrzT3vqQcUV5CT9bQD0gulEe9o=";
               deepClone = true;
             })
           ];
+
           sourceRoot = "source";
 
           nativeBuildInputs = with pkgs; [
             git
             pkgsCross.arm-embedded.cmake
+            gcc-arm-embedded
+            python3
+            picotool
           ];
 
           cmakeFlags = [
             "-DPICO_SDK_PATH=/build/pico-sdk"
+            "-DCMAKE_C_COMPILER=${pkgs.gcc-arm-embedded}/bin/arm-none-eabi-gcc"
+            "-DCMAKE_CXX_COMPILER=${pkgs.gcc-arm-embedded}/bin/arm-none-eabi-g++"
+            "-DPICOTOOL_DIR=/build/picotool"
           ];
 
-          # configurePhase = ''
-          #   ls .. -al
-          #   echo $PWD
-          # '';
-
           buildPhase = ''
-            # cmake -S . -B build
-
-            cmake --build build --target desk_firmware
+            ls /build
+            cmake --build . --target desk_firmware
           '';
 
-          # installPhase = ''
-
-          # '';
-
-          # src = pkgs.fetchurl {
-          #   url = "mirror://gnu/hello/hello-${finalAttrs.version}.tar.gz";
-          #   hash = "sha256-WpqZbcKSzCTc9BHO6H6S9qrluNE72caBm0x6nc4IGKs=";
-          # };
-
-          # env = pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
-          #   NIX_LDFLAGS = "-liconv";
-          # };
-
-          # Give hello some install checks for testing purpose.
-          # postInstallCheck = ''
-          #   stat "''${!outputBin}/bin/${finalAttrs.meta.mainProgram}"
-          # '';
-
-          # passthru.tests.run = pkgs.callPackage ./test.nix {hello = finalAttrs.finalPackage;};
+          installPhase = ''
+            mkdir $out
+            cp /build/source/build/* -r $out
+          '';
 
           meta = {
             description = "Firmware for the Connect 4 Desk";
             homepage = "https://github.com/fizzyapple12/connect-4-robot";
-            maintainers = with pkgs.lib.maintainers; [fizzyapple12];
+            maintainers = with pkgs.lib.maintainers; [ fizzyapple12 ];
             mainProgram = "desk_firmware.uf2";
             platforms = pkgs.lib.platforms.all;
           };

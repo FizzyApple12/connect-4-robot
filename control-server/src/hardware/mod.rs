@@ -56,6 +56,8 @@ pub enum PieceManipulatorPosition {
     SelfPickUp,
     SelfDropOff,
     OpponentDropOff,
+    WinPose,
+    LoosePose,
 }
 
 #[derive(Debug)]

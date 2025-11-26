@@ -8,6 +8,7 @@ use crate::{
         UserInterfaceButton, UserInterfaceLightPattern,
         generic::{GenericBoardReader, GenericPieceManipulator, GenericUserInterface},
     },
+    player::PlayerError,
     types::GamePiece,
 };
 
@@ -309,7 +310,58 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
                 }
             };
 
-            let (piece_type, column) = player::find_move(&board_state, search_depth).await;
+            let ((piece_type, column), reset, won) =
+                match player::find_move(&board_state, search_depth).await {
+                    Ok(player_move) => (player_move, false, false),
+                    Err(PlayerError::ResultDetermined { winner, final_move }) => {
+                        match (winner, final_move) {
+                            (GamePiece::Red, Some(final_move)) => (final_move, true, true),
+                            (GamePiece::Yellow, Some(final_move))
+                            | (GamePiece::Blank, Some(final_move)) => (final_move, true, false),
+                            (GamePiece::Red, None) => {
+                                let _ = piece_manipulator
+                                    .move_to(PieceManipulatorPosition::WinPose)
+                                    .await;
+
+                                let _ = piece_manipulator
+                                    .move_to(PieceManipulatorPosition::Home)
+                                    .await;
+
+                                return MainLoopState::ResettingBoard {
+                                    user_interface,
+                                    piece_manipulator,
+                                    board_reader,
+                                };
+                            }
+                            (GamePiece::Yellow, None) | (GamePiece::Blank, None) => {
+                                let _ = piece_manipulator
+                                    .move_to(PieceManipulatorPosition::LoosePose)
+                                    .await;
+
+                                let _ = piece_manipulator
+                                    .move_to(PieceManipulatorPosition::Home)
+                                    .await;
+
+                                return MainLoopState::ResettingBoard {
+                                    user_interface,
+                                    piece_manipulator,
+                                    board_reader,
+                                };
+                            }
+                        }
+                    } // Err(err) => {
+                      //     println!("player encountered an error, retrying on 1 second: {err:#?}");
+
+                      //     tokio::time::sleep(Duration::from_secs(1)).await;
+
+                      //     return MainLoopState::RobotTurn {
+                      //         user_interface,
+                      //         piece_manipulator,
+                      //         board_reader,
+                      //         search_depth,
+                      //     };
+                      // }
+                };
 
             match piece_type {
                 GamePiece::Red => {
@@ -337,10 +389,32 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
 
                     let _ = piece_manipulator.dispense(DispenseSide::Opponent).await;
 
-                    MainLoopState::WaitingForOpponentTurn {
-                        user_interface,
-                        piece_manipulator,
-                        board_reader,
+                    if reset {
+                        if won {
+                            let _ = piece_manipulator
+                                .move_to(PieceManipulatorPosition::WinPose)
+                                .await;
+                        } else {
+                            let _ = piece_manipulator
+                                .move_to(PieceManipulatorPosition::LoosePose)
+                                .await;
+                        }
+
+                        let _ = piece_manipulator
+                            .move_to(PieceManipulatorPosition::Home)
+                            .await;
+
+                        MainLoopState::ResettingBoard {
+                            user_interface,
+                            piece_manipulator,
+                            board_reader,
+                        }
+                    } else {
+                        MainLoopState::WaitingForOpponentTurn {
+                            user_interface,
+                            piece_manipulator,
+                            board_reader,
+                        }
                     }
                 }
                 _ => {
@@ -348,10 +422,32 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
                         .move_to(PieceManipulatorPosition::Home)
                         .await;
 
-                    MainLoopState::WaitingForOpponentTurn {
-                        user_interface,
-                        piece_manipulator,
-                        board_reader,
+                    if reset {
+                        if won {
+                            let _ = piece_manipulator
+                                .move_to(PieceManipulatorPosition::WinPose)
+                                .await;
+                        } else {
+                            let _ = piece_manipulator
+                                .move_to(PieceManipulatorPosition::LoosePose)
+                                .await;
+                        }
+
+                        let _ = piece_manipulator
+                            .move_to(PieceManipulatorPosition::Home)
+                            .await;
+
+                        MainLoopState::ResettingBoard {
+                            user_interface,
+                            piece_manipulator,
+                            board_reader,
+                        }
+                    } else {
+                        MainLoopState::WaitingForOpponentTurn {
+                            user_interface,
+                            piece_manipulator,
+                            board_reader,
+                        }
                     }
                 }
             }

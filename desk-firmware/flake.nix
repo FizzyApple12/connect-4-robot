@@ -38,8 +38,6 @@
             pico-sdk
           ];
 
-          # LIBCLANG_PATH = pkgs.lib.makeLibraryPath [ pkgs.llvmPackages_latest.libclang.lib ];
-
           LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath nativeBuildInputs;
         };
 

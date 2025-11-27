@@ -2,6 +2,7 @@ pub mod board_operations;
 pub mod types;
 pub mod win_finder;
 
+use rand::seq::IteratorRandom;
 use std::cmp::Ordering;
 
 use crate::{
@@ -58,6 +59,8 @@ pub fn find_move(
     board: &GameBoard,
     search_depth: usize,
 ) -> Result<(GamePiece, usize), PlayerError> {
+    println!("solver checking if board is on robot's turn...");
+
     println!("solver checking if board is complete...");
 
     match check_for_wins_and_ties(board) {
@@ -95,19 +98,32 @@ pub fn find_move(
 
     println!("solver search results: {options:#?}");
 
-    let best_option = options
-        .iter()
+    let mut options: Vec<(usize, f64)> = options
+        .into_iter()
         .enumerate()
         .filter_map(|(i, option)| option.map(|option| (i, option)))
-        .max_by(|x, y| match (x.1).partial_cmp(&y.1) {
-            Some(ordering) => ordering,
-            None => match (x.1, y.1) {
-                (x, y) if x.is_nan() && y.is_nan() => Ordering::Equal,
-                (x, _) if x.is_nan() => Ordering::Less,
-                (_, y) if y.is_nan() => Ordering::Greater,
-                _ => Ordering::Equal,
-            },
-        });
+        .collect();
+
+    options.sort_by(|x, y| match (x.1).partial_cmp(&y.1) {
+        Some(ordering) => ordering,
+        None => match (x.1, y.1) {
+            (x, y) if x.is_nan() && y.is_nan() => Ordering::Equal,
+            (x, _) if x.is_nan() => Ordering::Less,
+            (_, y) if y.is_nan() => Ordering::Greater,
+            _ => Ordering::Equal,
+        },
+    });
+
+    options.reverse();
+
+    let min = options[0].1;
+
+    let mut rng = rand::rng();
+
+    let best_option = options
+        .into_iter()
+        .filter(|option| option.1 >= (min - f64::EPSILON))
+        .choose(&mut rng);
 
     match best_option {
         Some((index, probability)) => {

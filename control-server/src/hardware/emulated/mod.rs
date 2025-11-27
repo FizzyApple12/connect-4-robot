@@ -144,64 +144,7 @@ pub fn run_ui() -> ExternalUIInterface {
 
             #[cfg(feature = "emulated-board")]
             current_board: crate::types::GameBoard {
-                state: [
-                    [
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                    ],
-                    [
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                    ],
-                    [
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                    ],
-                    [
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                    ],
-                    [
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                    ],
-                    [
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                    ],
-                    [
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                        crate::types::GamePiece::Blank,
-                    ],
-                ],
+                state: [const { [const { crate::types::GamePiece::Blank }; 6] }; 7],
             },
         };
 

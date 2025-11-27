@@ -1,19 +1,24 @@
-use thiserror::Error;
+pub mod types;
 
-use crate::types::{GameBoard, GamePiece};
+use crate::{
+    player::types::PlayerError,
+    types::{GameBoard, GamePiece},
+};
 
-#[derive(Error, Debug)]
-pub enum PlayerError {
-    #[error("Board won by {winner:?}")]
-    ResultDetermined {
-        winner: GamePiece,
-        final_move: Option<(GamePiece, usize)>,
-    },
+pub async fn check_for_wins_and_ties(board: &GameBoard) -> Option<GamePiece> {
+    None
 }
 
 pub async fn find_move(
-    _board: &GameBoard,
+    board: &GameBoard,
     _search_depth: usize,
 ) -> Result<(GamePiece, usize), PlayerError> {
+    if let Some(side) = check_for_wins_and_ties(board).await {
+        return Err(PlayerError::ResultDetermined {
+            winner: side,
+            final_move: None,
+        });
+    }
+
     Ok((GamePiece::Red, 0))
 }

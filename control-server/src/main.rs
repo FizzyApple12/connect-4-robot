@@ -6,7 +6,7 @@ use crate::{
         UserInterfaceButton, UserInterfaceLightPattern,
         generic::{GenericBoardReader, GenericPieceManipulator, GenericUserInterface},
     },
-    player::PlayerError,
+    player::types::PlayerError,
     types::GamePiece,
 };
 use std::time::Duration;

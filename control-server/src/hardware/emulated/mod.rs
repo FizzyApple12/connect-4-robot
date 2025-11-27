@@ -70,7 +70,7 @@ pub struct HardwareEmulatorState {
     #[cfg(feature = "emulated-manipulator")]
     dispensed_opponent: bool,
 
-    #[cfg(feature = "emulated-board")]
+    #[cfg(any(feature = "emulated-manipulator", feature = "emulated-board"))]
     current_board: crate::types::GameBoard,
 }
 
@@ -142,7 +142,7 @@ pub fn run_ui() -> ExternalUIInterface {
             #[cfg(feature = "emulated-manipulator")]
             dispensed_opponent: false,
 
-            #[cfg(feature = "emulated-board")]
+            #[cfg(any(feature = "emulated-manipulator", feature = "emulated-board"))]
             current_board: crate::types::GameBoard {
                 state: [const { [const { crate::types::GamePiece::Blank }; 6] }; 7],
             },

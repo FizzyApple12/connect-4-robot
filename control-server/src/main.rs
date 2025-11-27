@@ -17,6 +17,8 @@ pub mod types;
 
 pub const SIMPLE_TURN_DEPTH: usize = 2;
 pub const COMPLEX_TURN_DEPTH: usize = 5;
+pub const ROBOT_PIECE: GamePiece = GamePiece::Red;
+pub const OPPONENT_PIECE: GamePiece = GamePiece::Yellow;
 
 enum MainLoopState {
     Init,
@@ -150,13 +152,13 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
                         .move_to(PieceManipulatorPosition::Home)
                         .await;
 
-                    match piece {
-                        GamePiece::Red => {
+                    match *piece {
+                        ROBOT_PIECE => {
                             let _ = piece_manipulator
                                 .move_to(PieceManipulatorPosition::SelfDropOff)
                                 .await;
                         }
-                        GamePiece::Yellow => {
+                        OPPONENT_PIECE => {
                             let _ = piece_manipulator
                                 .move_to(PieceManipulatorPosition::OpponentDropOff)
                                 .await;
@@ -318,14 +320,14 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
             println!("board: {board_state:#?}");
 
             let ((piece_type, column), reset, won) =
-                match player::find_move(&board_state, search_depth).await {
+                match player::find_move(&board_state, search_depth) {
                     Ok(player_move) => (player_move, false, false),
                     Err(PlayerError::ResultDetermined { winner, final_move }) => {
                         match (winner, final_move) {
-                            (GamePiece::Red, Some(final_move)) => (final_move, true, true),
-                            (GamePiece::Yellow, Some(final_move))
+                            (ROBOT_PIECE, Some(final_move)) => (final_move, true, true),
+                            (OPPONENT_PIECE, Some(final_move))
                             | (GamePiece::Blank, Some(final_move)) => (final_move, true, false),
-                            (GamePiece::Red, None) => {
+                            (ROBOT_PIECE, None) => {
                                 let _ = piece_manipulator
                                     .move_to(PieceManipulatorPosition::WinPose)
                                     .await;
@@ -340,7 +342,7 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
                                     board_reader,
                                 };
                             }
-                            (GamePiece::Yellow, None) | (GamePiece::Blank, None) => {
+                            (OPPONENT_PIECE, None) | (GamePiece::Blank, None) => {
                                 let _ = piece_manipulator
                                     .move_to(PieceManipulatorPosition::LosePose)
                                     .await;
@@ -356,22 +358,23 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
                                 };
                             }
                         }
-                    } // Err(err) => {
-                      //     println!("player encountered an error, retrying on 1 second: {err:#?}");
+                    }
+                    Err(err) => {
+                        println!("player encountered an error, retrying on 1 second: {err:#?}");
 
-                      //     tokio::time::sleep(Duration::from_secs(1)).await;
+                        tokio::time::sleep(Duration::from_secs(1)).await;
 
-                      //     return MainLoopState::RobotTurn {
-                      //         user_interface,
-                      //         piece_manipulator,
-                      //         board_reader,
-                      //         search_depth,
-                      //     };
-                      // }
+                        return MainLoopState::RobotTurn {
+                            user_interface,
+                            piece_manipulator,
+                            board_reader,
+                            search_depth,
+                        };
+                    }
                 };
 
             match piece_type {
-                GamePiece::Red => {
+                ROBOT_PIECE => {
                     let _ = piece_manipulator.dispense(DispenseSide::Robot).await;
 
                     let _ = piece_manipulator

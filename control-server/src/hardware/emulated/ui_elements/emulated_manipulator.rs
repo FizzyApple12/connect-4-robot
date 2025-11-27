@@ -1,15 +1,16 @@
 use std::time::Duration;
 
+use crate::ROBOT_PIECE;
+use crate::hardware::DispenseSide;
+use crate::hardware::PieceManipulatorPosition;
+use crate::hardware::emulated::{HardwareEmulatorState, HardwareMessage};
+use crate::player::board_operations::apply_move;
 use masonry::properties::types::AsUnit;
 use xilem::Color;
 use xilem::WidgetView;
 use xilem::style::Style;
 use xilem::view::{Axis, flex, label, sized_box, task_raw};
 use xilem_core::fork;
-
-use crate::hardware::DispenseSide;
-use crate::hardware::PieceManipulatorPosition;
-use crate::hardware::emulated::{HardwareEmulatorState, HardwareMessage};
 
 const RED: Color = Color::from_rgb8(0xff, 0x00, 0x00);
 const GREEN: Color = Color::from_rgb8(0x00, 0xff, 0x00);
@@ -315,8 +316,18 @@ pub fn emulated_manipulator(
                 }
                 ManipulatorEvent::Grab(grip) => {
                     data.grab = grip;
-                    if data.position == PieceManipulatorPosition::SelfPickUp {
+                    if grip && data.position == PieceManipulatorPosition::SelfPickUp {
                         data.dispensed_robot = false;
+                    }
+                    if !grip
+                        && let PieceManipulatorPosition::ColumnDropOff(ref column_index) =
+                            data.position
+                        && let Ok(new_board) = apply_move(
+                            data.current_board.clone(),
+                            (ROBOT_PIECE, column_index.clone()),
+                        )
+                    {
+                        data.current_board = new_board;
                     }
                 }
                 ManipulatorEvent::BoardRelease(release) => {

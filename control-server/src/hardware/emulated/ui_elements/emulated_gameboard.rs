@@ -32,6 +32,7 @@ pub fn emulated_gameboard(
                         column
                             .iter()
                             .enumerate()
+                            .rev()
                             .map(move |(row_index, piece)| {
                                 sized_box(
                                     button(label(""), move |data: &mut HardwareEmulatorState| {

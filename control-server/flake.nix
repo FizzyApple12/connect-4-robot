@@ -25,6 +25,18 @@
             llvmPackages.bintools
             rustup
             yaml-language-server
+            fontconfig
+            vulkan-loader
+            libxkbcommon
+            xorg.libxcb
+            xorg.libX11
+            xorg.libXcursor
+            xorg.libXi
+            xorg.libXrandr
+            xorg.libXxf86vm
+            wayland
+            wayland-protocols
+            wayland-scanner
           ];
 
           RUSTC_VERSION = "nightly";

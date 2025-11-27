@@ -1,7 +1,5 @@
 #![allow(async_fn_in_trait)]
 
-use std::time::Duration;
-
 use crate::{
     hardware::{
         BoardReader, DispenseSide, PieceManipulator, PieceManipulatorPosition, UserInterface,
@@ -11,6 +9,7 @@ use crate::{
     player::PlayerError,
     types::GamePiece,
 };
+use std::time::Duration;
 
 pub mod hardware;
 pub mod player;
@@ -131,10 +130,14 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
                 }
             };
 
+            println!("board: {board_state:#?}");
+
+            let _ = piece_manipulator.board_release(true).await;
+
             for (column_index, board_column) in board_state.state.iter().enumerate() {
-                for piece in board_column {
-                    if matches!(piece, GamePiece::Blank) {
-                        break;
+                for piece in board_column.iter().rev() {
+                    if *piece == GamePiece::Blank {
+                        continue;
                     }
 
                     let _ = piece_manipulator
@@ -168,6 +171,8 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
                         .await;
                 }
             }
+
+            let _ = piece_manipulator.board_release(false).await;
 
             let _ = piece_manipulator
                 .move_to(PieceManipulatorPosition::Home)
@@ -267,14 +272,7 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
             search_depth,
         } => {
             let _ = user_interface
-                .set_button_lights(
-                    UserInterfaceButton::Red,
-                    if search_depth == COMPLEX_TURN_DEPTH {
-                        UserInterfaceLightPattern::On
-                    } else {
-                        UserInterfaceLightPattern::Off
-                    },
-                )
+                .set_button_lights(UserInterfaceButton::Red, UserInterfaceLightPattern::Off)
                 .await;
             let _ = user_interface
                 .set_button_lights(
@@ -287,7 +285,14 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
                 )
                 .await;
             let _ = user_interface
-                .set_button_lights(UserInterfaceButton::Green, UserInterfaceLightPattern::Off)
+                .set_button_lights(
+                    UserInterfaceButton::Green,
+                    if search_depth == COMPLEX_TURN_DEPTH {
+                        UserInterfaceLightPattern::On
+                    } else {
+                        UserInterfaceLightPattern::Off
+                    },
+                )
                 .await;
 
             let _ = piece_manipulator
@@ -309,6 +314,8 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
                     };
                 }
             };
+
+            println!("board: {board_state:#?}");
 
             let ((piece_type, column), reset, won) =
                 match player::find_move(&board_state, search_depth).await {
@@ -335,7 +342,7 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
                             }
                             (GamePiece::Yellow, None) | (GamePiece::Blank, None) => {
                                 let _ = piece_manipulator
-                                    .move_to(PieceManipulatorPosition::LoosePose)
+                                    .move_to(PieceManipulatorPosition::LosePose)
                                     .await;
 
                                 let _ = piece_manipulator
@@ -396,7 +403,7 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
                                 .await;
                         } else {
                             let _ = piece_manipulator
-                                .move_to(PieceManipulatorPosition::LoosePose)
+                                .move_to(PieceManipulatorPosition::LosePose)
                                 .await;
                         }
 
@@ -429,7 +436,7 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
                                 .await;
                         } else {
                             let _ = piece_manipulator
-                                .move_to(PieceManipulatorPosition::LoosePose)
+                                .move_to(PieceManipulatorPosition::LosePose)
                                 .await;
                         }
 

@@ -16,14 +16,14 @@ mod physical;
 use crate::types::GameBoard;
 use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum UserInterfaceButton {
     Red,
     Yellow,
     Green,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum UserInterfaceLightPattern {
     Off,
     Blink,
@@ -47,7 +47,7 @@ pub trait UserInterface {
     async fn wait_for_button(&self, button: UserInterfaceButton) -> Result<(), UserInterfaceError>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PieceManipulatorPosition {
     Home,
     Capture,
@@ -57,10 +57,10 @@ pub enum PieceManipulatorPosition {
     SelfDropOff,
     OpponentDropOff,
     WinPose,
-    LoosePose,
+    LosePose,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DispenseSide {
     Robot,
     Opponent,
@@ -87,7 +87,10 @@ pub trait PieceManipulator {
 }
 
 #[derive(Error, Debug)]
-pub enum BoardReaderError {}
+pub enum BoardReaderError {
+    #[error("No Board Reader Connected")]
+    NoReaderConnected,
+}
 
 pub trait BoardReader {
     async fn connect() -> Result<Self, BoardReaderError>

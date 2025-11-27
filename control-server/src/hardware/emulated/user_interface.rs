@@ -1,12 +1,17 @@
+use crate::hardware::emulated::{ExternalUIInterface, HardwareMessage, UIMessage, run_ui};
 use crate::hardware::{
     UserInterface, UserInterfaceButton, UserInterfaceError, UserInterfaceLightPattern,
 };
 
-pub struct EmulatedUserInterface {}
+pub struct EmulatedUserInterface {
+    ui_interface: ExternalUIInterface,
+}
 
 impl UserInterface for EmulatedUserInterface {
     async fn connect() -> Result<EmulatedUserInterface, UserInterfaceError> {
-        Ok(EmulatedUserInterface {})
+        let ui_interface = run_ui();
+
+        Ok(EmulatedUserInterface { ui_interface })
     }
 
     async fn set_button_lights(
@@ -14,14 +19,39 @@ impl UserInterface for EmulatedUserInterface {
         button: UserInterfaceButton,
         pattern: UserInterfaceLightPattern,
     ) -> Result<(), UserInterfaceError> {
-        todo!(
+        println!(
             "emulated user interface: set_button_lights {:?} {:?}",
-            button,
-            pattern
-        )
+            button, pattern
+        );
+
+        let _ = self
+            .ui_interface
+            .hardware_message_sender
+            .send(HardwareMessage::SetButtonLights(button, pattern));
+
+        Ok(())
     }
 
     async fn wait_for_button(&self, button: UserInterfaceButton) -> Result<(), UserInterfaceError> {
-        todo!("emulated user interface: wait_for_button {:?}", button)
+        println!("emulated user interface: wait_for_button {:?}", button);
+
+        let ui_message_sender = self.ui_interface.ui_message_sender.clone();
+
+        let mut ui_message_receiver = ui_message_sender.subscribe();
+
+        loop {
+            if let Ok(ui_message) = ui_message_receiver.recv().await {
+                match ui_message {
+                    UIMessage::ButtonPressed(button_pressed) => {
+                        if button_pressed == button {
+                            break;
+                        }
+                    }
+                    UIMessage::CurrentBoard(_) => {}
+                }
+            }
+        }
+
+        Ok(())
     }
 }

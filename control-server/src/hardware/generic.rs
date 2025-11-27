@@ -69,14 +69,14 @@ impl PieceManipulator for GenericPieceManipulator {
     ) -> Result<(), PieceManipulatorError> {
         #[cfg(feature = "emulated-manipulator")]
         return self.emulated.move_to(position).await;
-        #[cfg(feature = "physical-ui")]
+        #[cfg(feature = "physical-manipulator")]
         todo!("generic piece manipulator: move_to {:?}", position)
     }
 
     async fn grab(&self, grip: bool) -> Result<(), PieceManipulatorError> {
         #[cfg(feature = "emulated-manipulator")]
         return self.emulated.grab(grip).await;
-        #[cfg(feature = "physical-ui")]
+        #[cfg(feature = "physical-manipulator")]
         todo!("generic piece manipulator: grab {:?}", grip)
     }
 

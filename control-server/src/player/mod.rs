@@ -59,8 +59,6 @@ pub fn find_move(
     board: &GameBoard,
     search_depth: usize,
 ) -> Result<(GamePiece, usize), PlayerError> {
-    println!("solver checking if board is on robot's turn...");
-
     println!("solver checking if board is complete...");
 
     match check_for_wins_and_ties(board) {
@@ -116,7 +114,14 @@ pub fn find_move(
 
     options.reverse();
 
-    let min = options[0].1;
+    let Some(first) = options.first() else {
+        return Err(PlayerError::ResultDetermined {
+            winner: GamePiece::Blank,
+            final_move: None,
+        });
+    };
+
+    let min = first.1;
 
     let mut rng = rand::rng();
 

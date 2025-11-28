@@ -322,10 +322,8 @@ pub fn emulated_manipulator(
                     if !grip
                         && let PieceManipulatorPosition::ColumnDropOff(ref column_index) =
                             data.position
-                        && let Ok(new_board) = apply_move(
-                            data.current_board.clone(),
-                            (ROBOT_PIECE, column_index.clone()),
-                        )
+                        && let Ok(new_board) =
+                            apply_move(data.current_board.clone(), (ROBOT_PIECE, *column_index))
                     {
                         data.current_board = new_board;
                     }

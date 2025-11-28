@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-# axum = { version = "0.8.7", optional = true, features = ["ws"] }
+axum = { version = "0.8.7", optional = true, features = ["ws"] }
 masonry = { version = "0.4.0", optional = true }
 masonry_winit = { version = "0.4.0", optional = true }
 rand = "0.9.2"
@@ -19,7 +19,7 @@ xilem_core = { version = "0.4.0", optional = true }
 default = [ "physical-ui", "physical-board", "physical-manipulator" ]
 
 # telnet = []
-websocket = [ ]
+websocket = [ "dep:axum" ]
 usb-serial = [ "dep:serialport" ]
 
 gui = [ "dep:winit", "dep:xilem", "dep:xilem_core", "dep:masonry", "dep:masonry_winit" ]

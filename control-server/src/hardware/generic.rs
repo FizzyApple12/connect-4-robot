@@ -1,3 +1,5 @@
+#[cfg(feature = "physical-board")]
+use crate::hardware::physical::board_reader::PhysicalBoardReader;
 use crate::{
     hardware::{
         BoardReader, BoardReaderError, DispenseSide, PieceManipulator, PieceManipulatorError,
@@ -98,6 +100,8 @@ impl PieceManipulator for GenericPieceManipulator {
 pub struct GenericBoardReader {
     #[cfg(feature = "emulated-board")]
     emulated: EmulatedBoardReader,
+    #[cfg(feature = "physical-board")]
+    physical: PhysicalBoardReader,
 }
 
 impl BoardReader for GenericBoardReader {
@@ -105,6 +109,8 @@ impl BoardReader for GenericBoardReader {
         Ok(GenericBoardReader {
             #[cfg(feature = "emulated-board")]
             emulated: EmulatedBoardReader::connect().await?,
+            #[cfg(feature = "physical-board")]
+            physical: PhysicalBoardReader::connect().await?,
         })
     }
 
@@ -112,6 +118,6 @@ impl BoardReader for GenericBoardReader {
         #[cfg(feature = "emulated-board")]
         return self.emulated.capture().await;
         #[cfg(feature = "physical-board")]
-        todo!("generic board reader: capture")
+        return self.physical.capture().await;
     }
 }

@@ -1,29 +1,24 @@
 pub mod endpoints;
 
 use axum::{Json, Router, routing::get};
-use dotenv::dotenv;
 use endpoints::{
     EndpointModule,
-    board_reader::{DOORBELL_BASE_ENDPOINT, DoorbellModule},
+    board_reader::{BOARD_READER_BASE_ENDPOINT, BoardReaderModule},
 };
 use serde_json::{Value, json};
 use std::net::SocketAddr;
 use std::sync::OnceLock;
-use std::thread;
 use tokio::sync::broadcast;
+
+use crate::hardware::physical::interfaces::HardwareMessage;
 
 static SERVER_THREAD: OnceLock<ExternalServerInterface> = OnceLock::new();
 
 #[derive(Debug, Clone)]
 pub struct ExternalServerInterface {
-    pub ui_message_sender: broadcast::Sender<ServerMessage>,
+    pub server_message_sender: broadcast::Sender<ServerMessage>,
 
     pub hardware_message_sender: broadcast::Sender<HardwareMessage>,
-}
-
-#[derive(Debug, Clone)]
-pub enum HardwareMessage {
-    CaptureBoard,
 }
 
 #[derive(Debug, Clone)]
@@ -33,7 +28,7 @@ pub enum ServerMessage {
 
 #[derive(Debug, Clone)]
 pub struct ServerState {
-    ui_message_sender: broadcast::Sender<ServerMessage>,
+    server_message_sender: broadcast::Sender<ServerMessage>,
 
     hardware_message_sender: broadcast::Sender<HardwareMessage>,
 }
@@ -43,20 +38,21 @@ async fn root() -> Json<Value> {
 }
 
 pub fn run_server() -> ExternalServerInterface {
-    let interface = UI_THREAD.get_or_init(|| {
-        let (ui_message_sender, _) = broadcast::channel(16);
+    let interface = SERVER_THREAD.get_or_init(|| {
+        let (server_message_sender, _) = broadcast::channel(16);
         let (hardware_message_sender, _) = broadcast::channel(16);
 
         let app_state = ServerState {
-            ui_message_sender: ui_message_sender.clone(),
+            server_message_sender: server_message_sender.clone(),
 
             hardware_message_sender: hardware_message_sender.clone(),
         };
 
-        let _ = tokio::task::spawn(async move {
-            let app = Router::new()
-                .route("/", get(root))
-                .nest(DOORBELL_BASE_ENDPOINT, DoorbellModule::create_router());
+        tokio::task::spawn(async move {
+            let app = Router::new().route("/", get(root)).nest(
+                BOARD_READER_BASE_ENDPOINT,
+                BoardReaderModule::create_router(app_state.clone()),
+            );
 
             let listener = tokio::net::TcpListener::bind("0.0.0.0:4226").await.unwrap();
 
@@ -69,7 +65,7 @@ pub fn run_server() -> ExternalServerInterface {
         });
 
         ExternalServerInterface {
-            ui_message_sender,
+            server_message_sender,
 
             hardware_message_sender,
         }

@@ -26,13 +26,8 @@ impl BoardReader for EmulatedBoardReader {
             .send(HardwareMessage::CaptureBoard);
 
         loop {
-            if let Ok(ui_message) = ui_message_receiver.recv().await {
-                match ui_message {
-                    UIMessage::ButtonPressed(_) => {}
-                    UIMessage::CurrentBoard(board) => {
-                        return Ok(board);
-                    }
-                }
+            if let Ok(UIMessage::CurrentBoard(board)) = ui_message_receiver.recv().await {
+                return Ok(board);
             }
         }
 

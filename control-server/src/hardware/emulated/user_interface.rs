@@ -40,15 +40,10 @@ impl UserInterface for EmulatedUserInterface {
         let mut ui_message_receiver = ui_message_sender.subscribe();
 
         loop {
-            if let Ok(ui_message) = ui_message_receiver.recv().await {
-                match ui_message {
-                    UIMessage::ButtonPressed(button_pressed) => {
-                        if button_pressed == button {
-                            break;
-                        }
-                    }
-                    UIMessage::CurrentBoard(_) => {}
-                }
+            if let Ok(UIMessage::ButtonPressed(button_pressed)) = ui_message_receiver.recv().await
+                && button_pressed == button
+            {
+                break;
             }
         }
 

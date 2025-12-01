@@ -1,58 +1,67 @@
+use super::EndpointModule;
+use crate::{
+    hardware::physical::interfaces::server::{HardwareMessage, ServerMessage, ServerState},
+    types::GameBoard,
+};
 use axum::{
-    Json, Router,
+    Router,
+    body::Bytes,
     extract::{
         State,
-        ws::{Message, WebSocket, WebSocketUpgrade},
+        ws::{Message, Utf8Bytes, WebSocket, WebSocketUpgrade},
     },
     response::IntoResponse,
-    routing::{get, post},
+    routing::get,
 };
 use futures_util::{SinkExt, StreamExt};
-use reqwest::StatusCode;
-use serde_json::json;
+use serde::{Deserialize, Serialize};
 use tokio::{
-    sync::watch::{self, Receiver, Sender},
+    sync::watch::{self},
     task::JoinHandle,
 };
 
-use super::EndpointModule;
+pub const BOARD_READER_BASE_ENDPOINT: &str = "/board_reader";
 
-pub const DOORBELL_BASE_ENDPOINT: &str = "/doorbell";
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub enum BoardReaderOutgoingMessage {
+    // Calibrate
+    Capture,
+}
 
-#[derive(Clone)]
-struct DoorbellState {
-    sender: Sender<bool>,
-    receiver: Receiver<bool>,
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub enum BoardReaderIncomingMessage {
+    CaptureResults(GameBoard),
 }
 
 #[derive(Clone)]
 enum SocketSenderMessage {
-    Ring(bool),
-    PingPong(),
+    Capture,
+    PingPong,
 }
 
-pub struct DoorbellModule {}
+pub struct BoardReaderModule {}
 
-impl EndpointModule for DoorbellModule {
-    fn create_router() -> Router {
-        let (sender, receiver) = watch::channel::<bool>(false);
-
-        let state = DoorbellState { sender, receiver };
-
+impl EndpointModule for BoardReaderModule {
+    fn create_router(server_state: ServerState) -> Router {
         Router::new()
-            .route("/", get(live))
-            .route("/status", get(status))
-            .route("/ring", post(ring))
-            .with_state(state)
+            .route("/", get(board_reader_entry))
+            .with_state(server_state)
     }
 }
 
-async fn live(State(state): State<DoorbellState>, ws: WebSocketUpgrade) -> impl IntoResponse {
-    ws.on_upgrade(move |socket| handle_socket(state, socket))
+async fn board_reader_entry(
+    State(state): State<ServerState>,
+    ws: WebSocketUpgrade,
+) -> impl IntoResponse {
+    ws.on_upgrade(move |socket| board_reader_socket(state, socket))
 }
 
-async fn handle_socket(state: DoorbellState, mut socket: WebSocket) {
-    if socket.send(Message::Ping(vec![1, 2, 3])).await.is_err() {
+async fn board_reader_socket(state: ServerState, mut socket: WebSocket) {
+    if socket
+        .send(Message::Ping(Bytes::from(vec![1, 2, 3])))
+        .await
+        .is_err()
+    {
         return;
     }
 
@@ -66,25 +75,19 @@ async fn handle_socket(state: DoorbellState, mut socket: WebSocket) {
         }
     }
 
+    let ServerState {
+        server_message_sender,
+        hardware_message_sender,
+    } = state;
+
     let (mut sender, mut receiver) = socket.split();
 
-    let mut ringing_reciever = state.sender.subscribe();
+    let mut hardware_message_receiver = hardware_message_sender.subscribe();
 
     let (send_task_sender, mut send_task_receiver) =
-        watch::channel::<SocketSenderMessage>(SocketSenderMessage::PingPong());
+        watch::channel::<SocketSenderMessage>(SocketSenderMessage::PingPong);
 
     let send_task_sender_2 = send_task_sender.clone();
-
-    if sender
-        .send(Message::Text(format!(
-            "{}",
-            *ringing_reciever.borrow_and_update()
-        )))
-        .await
-        .is_err()
-    {
-        return;
-    }
 
     let mut send_task: JoinHandle<()> = tokio::spawn(async move {
         loop {
@@ -92,21 +95,23 @@ async fn handle_socket(state: DoorbellState, mut socket: WebSocket) {
                 let next_message = send_task_receiver.borrow_and_update().clone();
 
                 match next_message {
-                    SocketSenderMessage::Ring(new_state) => {
-                        if sender
-                            .send(Message::Text(format!("{}", new_state)))
-                            .await
-                            .is_err()
+                    SocketSenderMessage::Capture => {
+                        if let Ok(message) =
+                            serde_json::to_string(&BoardReaderOutgoingMessage::Capture)
+                            && sender
+                                .send(Message::Text(Utf8Bytes::from(message)))
+                                .await
+                                .is_err()
                         {
                             return;
                         }
                     }
-                    SocketSenderMessage::PingPong() => {
+                    SocketSenderMessage::PingPong => {
                         if sender
-                            .send(Message::Ping(vec![
+                            .send(Message::Ping(Bytes::from(vec![
                                 103, 111, 111, 100, 32, 109, 111, 114, 110, 105, 110, 103, 33, 33,
                                 33,
-                            ]))
+                            ])))
                             .await
                             .is_err()
                         {
@@ -120,17 +125,18 @@ async fn handle_socket(state: DoorbellState, mut socket: WebSocket) {
 
     let mut ring_watcher_task: JoinHandle<()> = tokio::spawn(async move {
         loop {
-            if (ringing_reciever.changed().await).is_ok() {
-                let _ = send_task_sender.send(SocketSenderMessage::Ring(
-                    *ringing_reciever.borrow_and_update(),
-                ));
+            #[allow(irrefutable_let_patterns)]
+            if let Ok(message) = hardware_message_receiver.recv().await
+                && let HardwareMessage::CaptureBoard = message
+            {
+                let _ = send_task_sender.send(SocketSenderMessage::Capture);
             }
         }
     });
 
     let mut ping_pong_task: JoinHandle<()> = tokio::spawn(async move {
         loop {
-            let _ = send_task_sender_2.send(SocketSenderMessage::PingPong());
+            let _ = send_task_sender_2.send(SocketSenderMessage::PingPong);
 
             tokio::time::sleep(std::time::Duration::from_millis(5000)).await;
         }
@@ -138,22 +144,24 @@ async fn handle_socket(state: DoorbellState, mut socket: WebSocket) {
 
     let mut recv_task: JoinHandle<()> = tokio::spawn(async move {
         while let Some(Ok(msg)) = receiver.next().await {
-            if let Message::Close(_) = msg {
-                return;
-            }
-
-            if let Message::Text(t) = msg {
-                if !t.is_empty() {
-                    let new_state = t == "true" || t == "1";
-
-                    let _ = state.sender.send(new_state);
+            match msg {
+                Message::Text(text) => {
+                    if !text.is_empty() {
+                        match serde_json::from_str::<BoardReaderIncomingMessage>(text.as_str()) {
+                            Ok(BoardReaderIncomingMessage::CaptureResults(gameboard)) => {
+                                let _ = server_message_sender
+                                    .send(ServerMessage::CurrentBoard(gameboard));
+                            }
+                            Err(err) => {
+                                println!(
+                                    "board reader server: unable to deserialize incoming message: {err:#?}"
+                                )
+                            }
+                        }
+                    }
                 }
-            } else if let Message::Binary(d) = msg {
-                if !d.is_empty() {
-                    let new_state = d[0] != 0;
-
-                    let _ = state.sender.send(new_state);
-                }
+                Message::Close(_) => return,
+                _ => {}
             }
         }
     });
@@ -179,22 +187,5 @@ async fn handle_socket(state: DoorbellState, mut socket: WebSocket) {
             ring_watcher_task.abort();
             recv_task.abort();
         }
-    }
-}
-
-async fn status(State(state): State<DoorbellState>) -> Json<serde_json::Value> {
-    Json(json!({ "ringing": *state.receiver.borrow() }))
-}
-
-async fn ring(
-    State(state): State<DoorbellState>,
-    payload: String,
-) -> Result<Json<serde_json::Value>, StatusCode> {
-    if !payload.is_empty() {
-        let new_state = payload == "true" || payload == "1";
-
-        Ok(Json(json!({ "ok": state.sender.send(new_state).is_ok() })))
-    } else {
-        Ok(Json(json!({ "ok": state.sender.send(true).is_ok() })))
     }
 }

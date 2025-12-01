@@ -1,7 +1,10 @@
+#[cfg(feature = "emulated-board")]
 pub mod board_reader;
 pub mod external_app;
+#[cfg(feature = "emulated-manipulator")]
 pub mod piece_manipulator;
 mod ui_elements;
+#[cfg(feature = "emulated-ui")]
 pub mod user_interface;
 
 use crate::hardware::emulated::external_app::ExternalApp;
@@ -24,9 +27,13 @@ pub struct ExternalUIInterface {
 
 #[derive(Debug, Clone)]
 pub enum HardwareMessage {
+    #[cfg(feature = "emulated-manipulator")]
     MoveTo(crate::PieceManipulatorPosition),
+    #[cfg(feature = "emulated-manipulator")]
     Grab(bool),
+    #[cfg(feature = "emulated-manipulator")]
     BoardRelease(bool),
+    #[cfg(feature = "emulated-manipulator")]
     Dispense(crate::DispenseSide),
 
     #[cfg(feature = "emulated-ui")]

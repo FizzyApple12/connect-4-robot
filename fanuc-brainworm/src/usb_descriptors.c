@@ -102,24 +102,6 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid)
         for (len = 0; len < DESC_STR_MAX_LENGTH - 1 && str[len]; ++len) {
             desc_str[1 + len] = str[len];
         }
-
-        // if (index == USBD_STR_SERIAL_NUMBER) {
-        //     pico_unique_board_id_t id;
-        //     pico_get_unique_board_id(&id);
-
-        //     for (len = 0; len < 16; len += 2) {
-        //         const char *hexdig = "0123456789ABCDEF";
-
-        //         desc_str[1 + len + 0] = hexdig[id.id[len >> 1] >> 4];
-        //         desc_str[1 + len + 1] = hexdig[id.id[len >> 1] & 0x0F];
-        //     }
-        // } else {
-        //     const char *str = usbd_desc_str[index];
-
-        //     for (len = 0; len < DESC_STR_MAX_LENGTH - 1 && str[len]; ++len) {
-        //         desc_str[1 + len] = str[len];
-        //     }
-        // }
     }
 
     desc_str[0] = (TUSB_DESC_STRING << 8) | (2 * len + 2);

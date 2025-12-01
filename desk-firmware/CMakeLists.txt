@@ -4,7 +4,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(pico_sdk_import.cmake)
 
-project(my_project)
+project(desk_firmware)
 
 pico_sdk_init()
 

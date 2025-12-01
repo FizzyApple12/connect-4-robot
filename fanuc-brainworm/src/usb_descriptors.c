@@ -1,0 +1,128 @@
+#include "tusb.h"
+#include "pico/unique_id.h"
+
+#define USBD_VID (0xF155)
+#define USBD_PID (0xFB01)
+
+enum
+{
+    USBD_STR_LANGUAGE,
+    USBD_STR_MANUFACTURER,
+    USBD_STR_PRODUCT,
+    USBD_STR_SERIAL_NUMBER,
+    USBD_STR_CDC_0_NAME,
+};
+
+char *const usbd_desc_str[] =
+{
+    [USBD_STR_MANUFACTURER]  = "FizzyApple12",
+    [USBD_STR_PRODUCT]       = "FANUC BrainWorm",
+    [USBD_STR_SERIAL_NUMBER] = "fanuc_brainworm",
+    [USBD_STR_CDC_0_NAME]    = "CDC0",
+};
+
+static const tusb_desc_device_t usbd_desc_device =
+{
+    .bLength            = sizeof(tusb_desc_device_t),
+    .bDescriptorType    = TUSB_DESC_DEVICE,
+    .bcdUSB             = 0x0200,
+    .bDeviceClass       = TUSB_CLASS_MISC,
+    .bDeviceSubClass    = MISC_SUBCLASS_COMMON,
+    .bDeviceProtocol    = MISC_PROTOCOL_IAD,
+    .bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
+    .idVendor           = USBD_VID,
+    .idProduct          = USBD_PID,
+    .bcdDevice          = 0x0100,
+    .iManufacturer      = USBD_STR_MANUFACTURER,
+    .iProduct           = USBD_STR_PRODUCT,
+    .iSerialNumber      = USBD_STR_SERIAL_NUMBER,
+    .bNumConfigurations = 1,
+};
+
+#define EPNUM_CDC_0_CMD  (0x81)
+#define EPNUM_CDC_0_DATA (0x82)
+
+#define USBD_CDC_CMD_SIZE  (64)
+#define USBD_CDC_DATA_SIZE (64)
+
+#define USBD_MAX_POWER_MA (250)
+
+#define USBD_DESC_LEN ((TUD_CONFIG_DESC_LEN) + (TUD_CDC_DESC_LEN * CFG_TUD_CDC))
+
+enum {
+    ITF_NUM_CDC_0,  ITF_NUM_CDC_0_DATA,
+    ITF_NUM_TOTAL
+};
+
+static const uint8_t usbd_desc_cfg[USBD_DESC_LEN] =
+{
+    TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL,
+                          USBD_STR_LANGUAGE,
+                          USBD_DESC_LEN,
+                          TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP,
+                          USBD_MAX_POWER_MA),
+
+    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_0,
+                      USBD_STR_CDC_0_NAME,
+                         EPNUM_CDC_0_CMD, USBD_CDC_CMD_SIZE,
+                         EPNUM_CDC_0_DATA & 0x7F,
+                         EPNUM_CDC_0_DATA, USBD_CDC_DATA_SIZE),
+};
+
+const uint8_t *tud_descriptor_device_cb(void)
+{
+    return (const uint8_t *) &usbd_desc_device;
+}
+
+const uint8_t *tud_descriptor_configuration_cb(uint8_t index)
+{
+    (void)index;
+
+    return usbd_desc_cfg;
+}
+
+const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid)
+{
+    #define DESC_STR_MAX_LENGTH (20)
+    static uint16_t desc_str[DESC_STR_MAX_LENGTH];
+
+    uint8_t len;
+
+    if (index == USBD_STR_LANGUAGE) {
+        desc_str[1] = 0x0409;
+
+        len = 1;
+    } else {
+        if (index >= sizeof(usbd_desc_str) / sizeof(usbd_desc_str[0])) {
+            return NULL;
+        }
+
+        const char *str = usbd_desc_str[index];
+
+        for (len = 0; len < DESC_STR_MAX_LENGTH - 1 && str[len]; ++len) {
+            desc_str[1 + len] = str[len];
+        }
+
+        // if (index == USBD_STR_SERIAL_NUMBER) {
+        //     pico_unique_board_id_t id;
+        //     pico_get_unique_board_id(&id);
+
+        //     for (len = 0; len < 16; len += 2) {
+        //         const char *hexdig = "0123456789ABCDEF";
+
+        //         desc_str[1 + len + 0] = hexdig[id.id[len >> 1] >> 4];
+        //         desc_str[1 + len + 1] = hexdig[id.id[len >> 1] & 0x0F];
+        //     }
+        // } else {
+        //     const char *str = usbd_desc_str[index];
+
+        //     for (len = 0; len < DESC_STR_MAX_LENGTH - 1 && str[len]; ++len) {
+        //         desc_str[1 + len] = str[len];
+        //     }
+        // }
+    }
+
+    desc_str[0] = (TUSB_DESC_STRING << 8) | (2 * len + 2);
+
+    return desc_str;
+}

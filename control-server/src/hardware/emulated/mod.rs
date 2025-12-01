@@ -156,11 +156,7 @@ pub fn run_ui() -> ExternalUIInterface {
         };
 
         let _ = thread::spawn(move || {
-            let xilem = Xilem::new_simple(
-                app_state,
-                app_logic,
-                WindowOptions::new("Hardware Emulator"),
-            );
+            let xilem = Xilem::new_simple(app_state, app_logic, WindowOptions::new("robor"));
 
             let event_loop = EventLoop::with_user_event()
                 .with_any_thread(true)

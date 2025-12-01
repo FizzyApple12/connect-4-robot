@@ -34,16 +34,16 @@
             pkgs.cmake
             pkgs.gcc-arm-embedded
             pkgs.python3
+            pkgs.minicom
             picotool
             pico-sdk
-            pkgs.minicom
           ];
 
           LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath nativeBuildInputs;
         };
 
         packages.default = pkgs.pkgsCross.arm-embedded.stdenv.mkDerivation (finalAttrs: {
-          pname = "desk-firmware";
+          pname = "fanuc-brainworm";
           version = "1.0.0";
 
           srcs = [
@@ -71,7 +71,7 @@
           ];
 
           buildPhase = ''
-            cmake --build . --target desk_firmware
+            cmake --build . --target fanuc_brainworm
           '';
 
           installPhase = ''
@@ -80,10 +80,10 @@
           '';
 
           meta = {
-            description = "Firmware for the Connect 4 Desk";
+            description = "Firmware for the Connect 4 FANUC Robot control interface";
             homepage = "https://github.com/fizzyapple12/connect-4-robot";
             maintainers = with pkgs.lib.maintainers; [ fizzyapple12 ];
-            mainProgram = "desk_firmware.uf2";
+            mainProgram = "fanuc_brainworm.uf2";
             platforms = pkgs.lib.platforms.all;
           };
         });

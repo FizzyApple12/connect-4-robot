@@ -129,6 +129,8 @@ async fn board_reader_socket(state: ServerState, mut socket: WebSocket) {
             if let Ok(message) = hardware_message_receiver.recv().await
                 && let HardwareMessage::CaptureBoard = message
             {
+                println!("board reader server: requesting board reader to capture");
+
                 let _ = send_task_sender.send(SocketSenderMessage::Capture);
             }
         }
@@ -149,6 +151,10 @@ async fn board_reader_socket(state: ServerState, mut socket: WebSocket) {
                     if !text.is_empty() {
                         match serde_json::from_str::<BoardReaderIncomingMessage>(text.as_str()) {
                             Ok(BoardReaderIncomingMessage::CaptureResults(gameboard)) => {
+                                println!(
+                                    "board reader server: got capture results from board reader"
+                                );
+
                                 let _ = server_message_sender
                                     .send(ServerMessage::CurrentBoard(gameboard));
                             }

@@ -8,6 +8,8 @@
 
 #define MAX_NUMBERS 3
 #define POS_DATA_BITS 5
+#define POS_DATA_DELAY 20
+#define POS_CHECK_DELAY 500
 
 #define MOVING 2
 
@@ -56,16 +58,18 @@ void position()
 
         gpio_put(POS_DATA, data);
 
+        sleep_ms(POS_DATA_DELAY);
+
         clock = !clock;
         gpio_put(POS_CLOCK, clock);
 
-        sleep_ms(100);
+        sleep_ms(POS_DATA_DELAY);
     }
 
     gpio_put(POS_CLOCK, false);
     gpio_put(POS_DATA, false);
 
-    sleep_ms(500);
+    sleep_ms(POS_CHECK_DELAY);
 
     bool moving = true;
 

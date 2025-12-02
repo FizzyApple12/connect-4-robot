@@ -1,10 +1,9 @@
 pub mod endpoints;
 
 use axum::{Json, Router, routing::get};
-use endpoints::{
-    EndpointModule,
-    board_reader::{BOARD_READER_BASE_ENDPOINT, BoardReaderModule},
-};
+use endpoints::EndpointModule;
+#[cfg(feature = "physical-board")]
+use endpoints::board_reader::{BOARD_READER_BASE_ENDPOINT, BoardReaderModule};
 use serde_json::{Value, json};
 use std::net::SocketAddr;
 use std::sync::OnceLock;
@@ -49,10 +48,15 @@ pub fn run_server() -> ExternalServerInterface {
         };
 
         tokio::task::spawn(async move {
-            let app = Router::new().route("/", get(root)).nest(
-                BOARD_READER_BASE_ENDPOINT,
-                BoardReaderModule::create_router(app_state.clone()),
-            );
+            let mut app = Router::new().route("/", get(root));
+
+            #[cfg(feature = "physical-board")]
+            {
+                app = app.nest(
+                    BOARD_READER_BASE_ENDPOINT,
+                    BoardReaderModule::create_router(app_state.clone()),
+                );
+            }
 
             let listener = tokio::net::TcpListener::bind("0.0.0.0:4226").await.unwrap();
 

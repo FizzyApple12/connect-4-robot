@@ -60,6 +60,22 @@ pub enum PieceManipulatorPosition {
     LosePose,
 }
 
+impl PieceManipulatorPosition {
+    pub fn get_robot_position_index(self) -> usize {
+        match self {
+            PieceManipulatorPosition::Home => 0,
+            PieceManipulatorPosition::Capture => 1,
+            PieceManipulatorPosition::SelfDropOff => 2,
+            PieceManipulatorPosition::SelfPickUp => 3,
+            PieceManipulatorPosition::OpponentDropOff => 4,
+            PieceManipulatorPosition::ColumnDropOff(column) => 5 + column,
+            PieceManipulatorPosition::ColumnPickUp(column) => 12 + column,
+            PieceManipulatorPosition::WinPose => 19,
+            PieceManipulatorPosition::LosePose => 20,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DispenseSide {
     Robot,

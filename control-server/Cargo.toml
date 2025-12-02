@@ -11,7 +11,7 @@ masonry_winit = { version = "0.4.0", optional = true }
 rand = "0.9.2"
 serde = "1.0.228"
 serde_json = "1.0.145"
-serialport = { version = "4.8.1", optional = true }
+tokio-serial = { version = "5.4.5", optional = true }
 thiserror = "2.0.17"
 tokio = { version = "1", features = ["full", "sync"] }
 winit = { version = "0.30.12", optional = true }
@@ -22,15 +22,15 @@ xilem_core = { version = "0.4.0", optional = true }
 default = [ "physical-ui", "physical-board", "physical-manipulator" ]
 
 # telnet = []
-websocket = [ "dep:axum", "dep:futures-util" ]
-usb-serial = [ "dep:serialport" ]
+webserver = [ "dep:axum", "dep:futures-util" ]
+usb-serial = [ "dep:tokio-serial" ]
 
 gui = [ "dep:winit", "dep:xilem", "dep:xilem_core", "dep:masonry", "dep:masonry_winit" ]
 
 physical-ui = [ "usb-serial" ]
 emulated-ui = [ "gui" ]
 
-physical-board = [ "websocket" ]
+physical-board = [ "webserver" ]
 emulated-board = [ "gui" ]
 
 physical-manipulator = [

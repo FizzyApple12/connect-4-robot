@@ -1,5 +1,3 @@
-#[cfg(feature = "physical-board")]
-use crate::hardware::physical::board_reader::PhysicalBoardReader;
 use crate::{
     hardware::{
         BoardReader, BoardReaderError, DispenseSide, PieceManipulator, PieceManipulatorError,
@@ -8,6 +6,11 @@ use crate::{
     },
     types::GameBoard,
 };
+
+#[cfg(feature = "physical-board")]
+use crate::hardware::physical::board_reader::PhysicalBoardReader;
+#[cfg(feature = "physical-manipulator")]
+use crate::hardware::physical::piece_manipulator::PhysicalPieceManipulator;
 
 #[cfg(feature = "emulated-board")]
 use crate::hardware::emulated::board_reader::EmulatedBoardReader;
@@ -55,6 +58,8 @@ impl UserInterface for GenericUserInterface {
 pub struct GenericPieceManipulator {
     #[cfg(feature = "emulated-manipulator")]
     emulated: EmulatedPieceManipulator,
+    #[cfg(feature = "physical-manipulator")]
+    physical: PhysicalPieceManipulator,
 }
 
 impl PieceManipulator for GenericPieceManipulator {
@@ -62,6 +67,8 @@ impl PieceManipulator for GenericPieceManipulator {
         Ok(GenericPieceManipulator {
             #[cfg(feature = "emulated-manipulator")]
             emulated: EmulatedPieceManipulator::connect().await?,
+            #[cfg(feature = "physical-manipulator")]
+            physical: PhysicalPieceManipulator::connect().await?,
         })
     }
 
@@ -72,28 +79,28 @@ impl PieceManipulator for GenericPieceManipulator {
         #[cfg(feature = "emulated-manipulator")]
         return self.emulated.move_to(position).await;
         #[cfg(feature = "physical-manipulator")]
-        todo!("generic piece manipulator: move_to {:?}", position)
+        return self.physical.move_to(position).await;
     }
 
     async fn grab(&self, grip: bool) -> Result<(), PieceManipulatorError> {
         #[cfg(feature = "emulated-manipulator")]
         return self.emulated.grab(grip).await;
         #[cfg(feature = "physical-manipulator")]
-        todo!("generic piece manipulator: grab {:?}", grip)
+        return self.physical.grab(grip).await;
     }
 
     async fn board_release(&self, release: bool) -> Result<(), PieceManipulatorError> {
         #[cfg(feature = "emulated-manipulator")]
         return self.emulated.board_release(release).await;
         #[cfg(feature = "physical-manipulator")]
-        todo!("generic piece manipulator: board_release {:?}", release)
+        return self.physical.board_release(release).await;
     }
 
     async fn dispense(&self, side: DispenseSide) -> Result<(), PieceManipulatorError> {
         #[cfg(feature = "emulated-manipulator")]
         return self.emulated.dispense(side).await;
         #[cfg(feature = "physical-manipulator")]
-        todo!("generic piece manipulator: dispense {:?}", side)
+        return self.physical.dispense(side).await;
     }
 }
 

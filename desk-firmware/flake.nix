@@ -34,9 +34,9 @@
             pkgs.cmake
             pkgs.gcc-arm-embedded
             pkgs.python3
+            pkgs.minicom
             picotool
             pico-sdk
-            pkgs.minicom
           ];
 
           LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath nativeBuildInputs;

@@ -60,7 +60,6 @@ void run_serial_task()
             if (serial_command == 0)
             {
                 serial_command = (char) serial_input;
-                printf("command: %c\n", serial_command);
             } else
             {
                 switch (serial_command)
@@ -71,8 +70,6 @@ void run_serial_task()
                             button_colour = (char) serial_input;
                         } else
                         {
-                            printf("button: %c\n", button_colour);
-
                             switch ((char) serial_input)
                             {
                                 case '1':
@@ -108,8 +105,6 @@ void run_serial_task()
                     case 'd':
                         dispense_motor_number = (char) serial_input;
 
-                        printf("dispense: %c\n", dispense_motor_number);
-
                         multicore_fifo_push_blocking(MOTION_COMMAND_DISPENSE);
                         multicore_fifo_push_blocking(dispense_motor_number == '0' ? 0 : 1);
 
@@ -118,8 +113,6 @@ void run_serial_task()
                         break;
                     case 'r':
                         release_position = (char) serial_input;
-
-                        printf("release: %c\n", release_position);
 
                         multicore_fifo_push_blocking(MOTION_COMMAND_RELEASE);
                         multicore_fifo_push_blocking(release_position == '0' ? 0 : 1);

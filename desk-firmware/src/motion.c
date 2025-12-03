@@ -1,5 +1,6 @@
 #include "motion.h"
 
+#include "tmc2209.h"
 #include "main.h"
 #include <hardware/gpio.h>
 #include <hardware/uart.h>
@@ -7,84 +8,25 @@
 #include <pico/time.h>
 #include <stdint.h>
 
-void crc(uint8_t* data, uint8_t length)
-{
-    uint8_t* crc = data + (length - 1);
-    uint8_t currentByte;
-
-    *crc = 0;
-
-    for (int i = 0; i < (length - 1); i++) {
-        currentByte = data[i];
-
-        for (int j = 0; j < 8; j++) {
-            if ((*crc >> 7) ^ (currentByte & 0x01))
-            {
-                *crc = (*crc << 1) ^ 0x07;
-            } else
-            {
-                *crc = (*crc << 1);
-            }
-
-            currentByte = currentByte >> 1;
-        }
-    }
-}
-
-void tmc_write(uint8_t tmc_id, uint8_t address, uint32_t data)
-{
-    uint8_t data_out[8] = {
-        0xAA,
-        tmc_id,
-        address | 0b10000000,
-        (uint8_t) ((data >> 24) & 0xFF),
-        (uint8_t) ((data >> 16) & 0xFF),
-        (uint8_t) ((data >> 8) & 0xFF),
-        (uint8_t) (data & 0xFF),
-        0
-    };
-
-    crc(data_out, 8);
-
-    uart_write_blocking(uart1, data_out, 8);
-}
-
-uint32_t tmc_read(uint8_t tmc_id, uint8_t address)
-{
-    uint8_t data_out[4] = {
-        0xAA,
-        tmc_id,
-        address & 0b01111111,
-        0
-    };
-
-    crc(data_out, 4);
-
-    uart_write_blocking(uart1, data_out, 4);
-
-    uint8_t data_in[8];
-
-    uart_read_blocking(uart1, data_in, 8);
-
-    return (((uint32_t) data_in[3]) << 24)
-        + (((uint32_t) data_in[4]) << 16)
-        + (((uint32_t) data_in[5]) << 8)
-        + ((uint32_t) data_in[6]);
-}
-
 void run_motion_task()
 {
-    tmc_write(BOARD_RELEASE_MOTOR_ID, 0x00, 0b00000000000000000000000011000010);
-    tmc_write(BOARD_RELEASE_MOTOR_ID, 0x6C, 0b00010000000000100000000111001100);
-    tmc_write(BOARD_RELEASE_MOTOR_ID, 0x70, 0b11111111000101000000000000100100);
+    tmc_write(uart1, BOARD_RELEASE_MOTOR_ID, REGISTER_GCONF,      CONFIG_GCONF_EN_SPREADCYCLE | CONFIG_GCONF_PDN_DISABLE | CONFIG_GCONF_MSTEP_REG_SELECT | CONFIG_GCONF_MULTISTEP_FILT);
+    tmc_write(uart1, BOARD_RELEASE_MOTOR_ID, REGISTER_SLAVECONF,  CONFIG_SLAVECONF(2));
+    tmc_write(uart1, BOARD_RELEASE_MOTOR_ID, REGISTER_IHOLD_IRUN, CONFIG_IHOLD_IRUN_IHOLD(0) | CONFIG_IHOLD_IRUN_IRUN(31) | CONFIG_IHOLD_IRUN_IHOLDDELAY(1));
+    tmc_write(uart1, BOARD_RELEASE_MOTOR_ID, REGISTER_CHOPCONF,   CONFIG_CHOPCONF_INTPOL | CONFIG_CHOPCONF_MRES(2) | CONFIG_CHOPCONF_HSTRT(5) | CONFIG_CHOPCONF_TOFF(3));
+    // tmc_write(uart1, BOARD_RELEASE_MOTOR_ID, REGISTER_PWMCONF,    CONFIG_PWMCONF_PWM_LIM(12) | CONFIG_PWMCONF_PWM_REG(2) | CONFIG_PWMCONF_FREEWHEEL(1) | CONFIG_PWMCONF_AUTOSCALE | CONFIG_PWMCONF_PWM_GRAD(2) | CONFIG_PWMCONF_PWM_OFS(31));
 
-    tmc_write(ROBOT_DISPENSER_MOTOR_ID, 0x00, 0b00000000000000000000000011000010);
-    tmc_write(ROBOT_DISPENSER_MOTOR_ID, 0x6C, 0b00010000000000100000000111001100);
-    tmc_write(ROBOT_DISPENSER_MOTOR_ID, 0x70, 0b11111111000101000000000000100100);
+    tmc_write(uart1, ROBOT_DISPENSER_MOTOR_ID, REGISTER_GCONF,      CONFIG_GCONF_EN_SPREADCYCLE | CONFIG_GCONF_PDN_DISABLE | CONFIG_GCONF_MSTEP_REG_SELECT | CONFIG_GCONF_MULTISTEP_FILT);
+    tmc_write(uart1, ROBOT_DISPENSER_MOTOR_ID, REGISTER_SLAVECONF,  CONFIG_SLAVECONF(2));
+    tmc_write(uart1, ROBOT_DISPENSER_MOTOR_ID, REGISTER_IHOLD_IRUN, CONFIG_IHOLD_IRUN_IHOLD(0) | CONFIG_IHOLD_IRUN_IRUN(31) | CONFIG_IHOLD_IRUN_IHOLDDELAY(1));
+    tmc_write(uart1, ROBOT_DISPENSER_MOTOR_ID, REGISTER_CHOPCONF,   CONFIG_CHOPCONF_INTPOL | CONFIG_CHOPCONF_MRES(2) | CONFIG_CHOPCONF_HSTRT(5) | CONFIG_CHOPCONF_TOFF(3));
+    // tmc_write(uart1, ROBOT_DISPENSER_MOTOR_ID, REGISTER_PWMCONF,    CONFIG_PWMCONF_PWM_LIM(12) | CONFIG_PWMCONF_PWM_REG(2) | CONFIG_PWMCONF_FREEWHEEL(1) | CONFIG_PWMCONF_AUTOSCALE | CONFIG_PWMCONF_PWM_GRAD(2) | CONFIG_PWMCONF_PWM_OFS(31));
 
-    tmc_write(OPPONENT_DISPENSER_MOTOR_ID, 0x00, 0b00000000000000000000000011000010);
-    tmc_write(OPPONENT_DISPENSER_MOTOR_ID, 0x6C, 0b00010000000000100000000111001100);
-    tmc_write(OPPONENT_DISPENSER_MOTOR_ID, 0x70, 0b11111111000101000000000000100100);
+    tmc_write(uart1, OPPONENT_DISPENSER_MOTOR_ID, REGISTER_GCONF,      CONFIG_GCONF_EN_SPREADCYCLE | CONFIG_GCONF_PDN_DISABLE | CONFIG_GCONF_MSTEP_REG_SELECT | CONFIG_GCONF_MULTISTEP_FILT);
+    tmc_write(uart1, OPPONENT_DISPENSER_MOTOR_ID, REGISTER_SLAVECONF,  CONFIG_SLAVECONF(2));
+    tmc_write(uart1, OPPONENT_DISPENSER_MOTOR_ID, REGISTER_IHOLD_IRUN, CONFIG_IHOLD_IRUN_IHOLD(0) | CONFIG_IHOLD_IRUN_IRUN(31) | CONFIG_IHOLD_IRUN_IHOLDDELAY(1));
+    tmc_write(uart1, OPPONENT_DISPENSER_MOTOR_ID, REGISTER_CHOPCONF,   CONFIG_CHOPCONF_INTPOL | CONFIG_CHOPCONF_MRES(2) | CONFIG_CHOPCONF_HSTRT(5) | CONFIG_CHOPCONF_TOFF(3));
+    // tmc_write(uart1, OPPONENT_DISPENSER_MOTOR_ID, REGISTER_PWMCONF,    CONFIG_PWMCONF_PWM_LIM(12) | CONFIG_PWMCONF_PWM_REG(2) | CONFIG_PWMCONF_FREEWHEEL(1) | CONFIG_PWMCONF_AUTOSCALE | CONFIG_PWMCONF_PWM_GRAD(2) | CONFIG_PWMCONF_PWM_OFS(31));
 
     bool released = false;
 
@@ -149,7 +91,7 @@ void run_motion_task()
 
                     sleep_ms(1);
 
-                    for (int i = 0; i < DISPENSE_STEPS; i++) {
+                    for (int i = 0; i < RELEASE_STEPS; i++) {
                         gpio_put(BOARD_RELEASE_MOTOR_STEP, true);
 
                         sleep_us(RELEASE_STEP_FREQUENCY);

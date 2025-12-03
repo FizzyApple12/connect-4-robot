@@ -1,14 +1,14 @@
 nonisolated enum ServerIncomingMessageType: String, Codable {
     case ping
     case pong
-    case calibrate
+//    case calibrate
     case capture
 }
 
 nonisolated enum ServerIncomingMessage: Codable {
     case ping
     case pong
-    case calibrate
+//    case calibrate
     case capture
 
     private enum CodingKeys: String, CodingKey {
@@ -24,8 +24,8 @@ nonisolated enum ServerIncomingMessage: Codable {
             self = .ping
         case .pong:
             self = .pong
-        case .calibrate:
-            self = .calibrate
+//        case .calibrate:
+//            self = .calibrate
         case .capture:
             self = .capture
         }
@@ -39,8 +39,8 @@ nonisolated enum ServerIncomingMessage: Codable {
             try container.encode(ServerIncomingMessageType.ping, forKey: .type)
         case .pong:
             try container.encode(ServerIncomingMessageType.pong, forKey: .type)
-        case .calibrate:
-            try container.encode(ServerIncomingMessageType.calibrate, forKey: .type)
+//        case .calibrate:
+//            try container.encode(ServerIncomingMessageType.calibrate, forKey: .type)
         case .capture:
             try container.encode(ServerIncomingMessageType.capture, forKey: .type)
         }

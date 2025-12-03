@@ -66,7 +66,7 @@ class ServerConnector: NSObject {
     }
     
     func registerMessageHandler(_ handler: @escaping (ServerIncomingMessage) -> Void) -> () -> Void {
-        let observer = NotificationCenter.default.addObserver(forName: connectionStateChangedNotificationName, object: nil, queue: nil) { eventObject in
+        let observer = NotificationCenter.default.addObserver(forName: messageNotificationName, object: nil, queue: nil) { eventObject in
             handler(eventObject.object as! ServerIncomingMessage)
         }
         

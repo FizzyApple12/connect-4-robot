@@ -5,6 +5,7 @@ import AVFoundation
 struct ContentView: View {
     // outside state
     @Binding var serverConnector: ServerConnector
+    @Binding var frameGrabber: FrameGrabber
     
     // internal state
     @State private var serverIpSetting: String = ""
@@ -15,50 +16,10 @@ struct ContentView: View {
     
     @State private var serverMessageHandlerRemover: () -> Void = {}
     @State private var messageLog: [String] = []
-    
-    // testing
-    private let captureSession = AVCaptureSession()
-    private let photoOutput = AVCapturePhotoOutput()
-    private let testOutput = CameraCaptureOutput()
-    
-    var isAuthorized: Bool {
-        get async {
-            let status = AVCaptureDevice.authorizationStatus(for: .video)
-            // Determine whether a person previously authorized camera access.
-            var isAuthorized = status == .authorized
-            // If the system hasn't determined their authorization status,
-            // explicitly prompt them for approval.
-            if status == .notDetermined {
-                isAuthorized = await AVCaptureDevice.requestAccess(for: .video)
-            }
-            return isAuthorized
-        }
-    }
 
     func registerOnAppear() {
         serverConnectionStateChangedHandlerRemover = self.serverConnector.registerConnectionStateChangedHandler(setConnectionStateButtonText)
         serverMessageHandlerRemover = self.serverConnector.registerMessageHandler(addMessageToLog)
-        
-        Task {
-            captureSession.startRunning()
-            
-            captureSession.beginConfiguration()
-            
-            if !isAuthorized { return }
-            
-            let videoDevice = AVCaptureDevice.default(for: .video)
-            guard
-                let videoDeviceInput = try? AVCaptureDeviceInput(device: videoDevice!),
-                captureSession.canAddInput(videoDeviceInput)
-            else { return }
-            
-            captureSession.addInput(videoDeviceInput)
-            
-            guard captureSession.canAddOutput(photoOutput) else { return }
-            captureSession.sessionPreset = .photo
-            captureSession.addOutput(photoOutput)
-            captureSession.commitConfiguration()
-        }
     }
     
     func cleanupOnDisappear() {
@@ -237,10 +198,10 @@ struct ContentView: View {
     
     func triggerVisionPipelineRun() {
         messageLog.append("manual capture triggered")
-        photoOutput.capturePhoto(with: AVCapturePhotoSettings.init(), delegate: testOutput)
+        frameGrabber.grab()
     }
 }
 
 #Preview {
-    ContentView(serverConnector: Binding.constant(ServerConnector()))
+    ContentView(serverConnector: Binding.constant(ServerConnector()), frameGrabber: Binding.constant(FrameGrabber()))
 }

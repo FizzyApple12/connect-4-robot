@@ -1,3 +1,9 @@
+nonisolated enum GamePieceType: String, Codable {
+    case Red
+    case Yellow
+    case Blank
+}
+
 nonisolated enum ServerOutgoingMessageType: String, Codable {
     case ping
     case pong
@@ -10,7 +16,7 @@ nonisolated enum ServerOutgoingMessage: Codable {
     case captureResults(CaptureResults)
     
     struct CaptureResults: Codable {
-        let test: String
+        let state: [[GamePieceType]]
     }
 
     private enum CodingKeys: String, CodingKey {

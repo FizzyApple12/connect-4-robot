@@ -16,15 +16,26 @@ struct ContentView: View {
     
     @State private var serverMessageHandlerRemover: () -> Void = {}
     @State private var messageLog: [String] = []
+    
+    @State private var frameCaptured: Bool = false
+    @State private var frameCapturedImage: UIImage? = nil;
+    @State private var frameProcessed: Bool = false
+    @State private var frameProcessedDebugImage: UIImage? = nil;
+    @State private var frameProcessedDebugText: String = ""
+    @State private var frameGrabbedHandlerRemover: () -> Void = {}
 
     func registerOnAppear() {
         serverConnectionStateChangedHandlerRemover = self.serverConnector.registerConnectionStateChangedHandler(setConnectionStateButtonText)
         serverMessageHandlerRemover = self.serverConnector.registerMessageHandler(addMessageToLog)
+        
+        frameGrabbedHandlerRemover = self.frameGrabber.registerFrameGrabbedHandler(imageCaptured)
     }
     
     func cleanupOnDisappear() {
         serverMessageHandlerRemover()
         serverConnectionStateChangedHandlerRemover()
+        
+        frameGrabbedHandlerRemover()
     }
     
     var body: some View {
@@ -61,22 +72,25 @@ struct ContentView: View {
                     Text("raw camera")
                     
                     ZStack {
-                        Image(.testImages)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .clipShape(Rectangle())
-                            .frame(width: 220, height: 220)
-                        
-                        Rectangle()
-                            .fill(.black)
-                            .opacity(0.80)
-                            .ignoresSafeArea()
-                        
-                        VStack {
-                            ProgressView()
-                            Text("Capturing...")
+                        if let frameCapturedImage = frameCapturedImage {
+                            Image(uiImage: frameCapturedImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .clipShape(Rectangle())
+                                .frame(width: 220, height: 220)
                         }
-                            .colorInvert()
+                        
+                        if (!frameCaptured) {
+                            Rectangle()
+                                .fill(.black)
+                                .opacity(0.80)
+                                .ignoresSafeArea()
+                            
+                            VStack {
+                                ProgressView()
+                                Text("Capturing...")
+                            }
+                        }
                     }
                         .frame(width: 220, height: 220)
                 }
@@ -84,22 +98,25 @@ struct ContentView: View {
                     Text("processed camera")
                     
                     ZStack {
-                        Image(.testImages)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .clipShape(Rectangle())
-                            .frame(width: 220, height: 220)
-                        
-                        Rectangle()
-                            .fill(.black)
-                            .opacity(0.80)
-                            .ignoresSafeArea()
-                        
-                        VStack {
-                            ProgressView()
-                            Text("Processing...")
+                        if let frameProcessedDebugImage = frameProcessedDebugImage {
+                            Image(uiImage: frameProcessedDebugImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .clipShape(Rectangle())
+                                .frame(width: 220, height: 220)
                         }
-                            .colorInvert()
+                            
+                        if (!frameProcessed) {
+                            Rectangle()
+                                .fill(.black)
+                                .opacity(0.80)
+                                .ignoresSafeArea()
+                        
+                            VStack {
+                                ProgressView()
+                                Text("Processing...")
+                            }
+                        }
                     }
                         .frame(width: 220, height: 220)
                 }
@@ -110,23 +127,24 @@ struct ContentView: View {
             VStack {
                 Text("vision pipeline results")
                 ZStack {
-                    Text("vision pipeline results\nvision pipeline results\nvision pipeline results\nvision pipeline results\nvision pipeline results\nvision pipeline results\nvision pipeline results\nvision pipeline results\nvision pipeline results\n")
+                    Text(frameProcessedDebugText)
                         .multilineTextAlignment(.leading)
                         .lineLimit(nil)
                         .frame(width: 440, height: 200, alignment: Alignment.topLeading)
                         .fontDesign(.monospaced)
                         .font(.system(size: 12))
                     
-                    Rectangle()
-                        .fill(.black)
-                        .opacity(0.80)
-                        .ignoresSafeArea()
-                    
-                    VStack {
-                        ProgressView()
-                        Text("Waiting for process results...")
+                    if (!frameProcessed) {
+                        Rectangle()
+                            .fill(.black)
+                            .opacity(0.80)
+                            .ignoresSafeArea()
+                        
+                        VStack {
+                            ProgressView()
+                            Text("Waiting for process results...")
+                        }
                     }
-                        .colorInvert()
                 }
                     .frame(height: 200)
             }
@@ -198,7 +216,22 @@ struct ContentView: View {
     
     func triggerVisionPipelineRun() {
         messageLog.append("manual capture triggered")
+        frameCaptured = false
+        frameProcessed = false
         frameGrabber.grab()
+    }
+    
+    func imageCaptured(_ image: CGImage) {
+        frameCapturedImage = UIImage(cgImage: image)
+        frameCaptured = true
+        
+        imageProcessed(image, "test")
+    }
+    
+    func imageProcessed(_ debugImage: CGImage, _ debugText: String) {
+        frameProcessedDebugImage = UIImage(cgImage: debugImage)
+        frameProcessedDebugText = debugText
+        frameProcessed = true
     }
 }
 

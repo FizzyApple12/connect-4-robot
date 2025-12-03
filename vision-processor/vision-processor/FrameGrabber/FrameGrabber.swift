@@ -93,48 +93,30 @@ class FrameGrabber: NSObject, AVCapturePhotoCaptureDelegate {
 //        settings.format =
         settings.flashMode = .on
         settings.isConstantColorEnabled = true
+        settings.isConstantColorFallbackPhotoDeliveryEnabled = false
+        settings.photoQualityPrioritization = .quality
+        settings.maxPhotoDimensions = photoOutput.maxPhotoDimensions
         
         photoOutput.capturePhoto(with: settings, delegate: self)
     }
 
-    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photoSampleBuffer: CMSampleBuffer?, previewPhoto previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
-        print("frame grabbed")
-        
+    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         if let error = error {
             print(error.localizedDescription)
             
             return;
         }
         
-        if let sampleBuffer = photoSampleBuffer {
-            
-            print("photo buffer present")
-            
-            if let imageBuffer = sampleBuffer.dataBuffer {
-                
-//                let ciImage = CIImage(cvPixelBuffer: imageBuffer)
-                
-                print("image buffer found")
-                
-//                let context = CIContext(options: nil)
-                
-//                if let cgImage = context.createCGImage(inputImage, from: inputImage.extent) {
-////                    return cgImage
-//                }
-            }
+        if let finalPhoto = photoToUIImage(photo: photo), let photoCGImage = finalPhoto.cgImage {
+//            print("photo buffer present: \(finalPhoto.size)")
+            emitFrameGrabbed(photoCGImage)
         }
     }
     
-//    func CVImageBufferToCGImage(_ imageBuffer: CVPixelBuffer) -> CGImage? {
-//        var cgImage: CGImage?
-//        
-//        let ciImage = CIImage(cvPixelBuffer: imageBuffer)
-//        
-//        CVPixelBufferLockBaseAddress(imageBuffer, [])
-//        let baseAddress = CVPixelBufferGetBaseAddress(imageBuffer)
-//        
-//        let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
-//    }
+    private func photoToUIImage(photo: AVCapturePhoto!) -> UIImage! {
+        let imageData = photo?.fileDataRepresentation()
+        return imageData.flatMap { UIImage(data: $0) }
+    }
     
     func registerFrameGrabbedHandler(_ handler: @escaping (CGImage) -> Void) -> () -> Void {
         let observer = NotificationCenter.default.addObserver(forName: frameGrabbedNotificationName, object: nil, queue: nil) { eventObject in

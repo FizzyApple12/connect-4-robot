@@ -57,23 +57,23 @@ async fn board_reader_entry(
 }
 
 async fn board_reader_socket(state: ServerState, mut socket: WebSocket) {
-    if socket
-        .send(Message::Ping(Bytes::from(vec![1, 2, 3])))
-        .await
-        .is_err()
-    {
-        return;
-    }
+    // if socket
+    //     .send(Message::Ping(Bytes::from(vec![1, 2, 3])))
+    //     .await
+    //     .is_err()
+    // {
+    //     return;
+    // }
 
-    if let Some(msg) = socket.recv().await {
-        if let Ok(msg) = msg {
-            if let Message::Close(_) = msg {
-                return;
-            }
-        } else {
-            return;
-        }
-    }
+    // if let Some(msg) = socket.recv().await {
+    //     if let Ok(msg) = msg {
+    //         if let Message::Close(_) = msg {
+    //             return;
+    //         }
+    //     } else {
+    //         return;
+    //     }
+    // }
 
     let ServerState {
         server_message_sender,

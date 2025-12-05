@@ -2,7 +2,7 @@
 #include "pico/unique_id.h"
 
 #define USBD_VID (0xF155)
-#define USBD_PID (0xD35C)
+#define USBD_PID (0xCD01)
 
 enum
 {

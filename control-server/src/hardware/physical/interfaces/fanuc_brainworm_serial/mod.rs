@@ -10,7 +10,7 @@ use crate::hardware::physical::interfaces::HardwareMessage;
 const BRAINWORM_VID: u16 = 0xF155;
 const BRAINWORM_PID: u16 = 0xFB01;
 
-static SERVER_THREAD: OnceLock<BrainwormSerialInterface> = OnceLock::new();
+static BRAINWORM_SERIAL_THREAD: OnceLock<BrainwormSerialInterface> = OnceLock::new();
 
 #[derive(Debug, Clone)]
 pub struct BrainwormSerialInterface {
@@ -31,13 +31,13 @@ pub struct BrainwormSerialState {
     hardware_message_sender: broadcast::Sender<HardwareMessage>,
 }
 
-pub fn connect_brainworm_serial() -> BrainwormSerialInterface {
-    let interface = SERVER_THREAD.get_or_init(|| {
-        let (server_message_sender, _) = broadcast::channel(16);
+pub async fn connect_brainworm_serial() -> BrainwormSerialInterface {
+    let interface = BRAINWORM_SERIAL_THREAD.get_or_init(|| {
+        let (serial_message_sender, _) = broadcast::channel(16);
         let (hardware_message_sender, _) = broadcast::channel(16);
 
         let app_state = BrainwormSerialState {
-            serial_message_sender: server_message_sender.clone(),
+            serial_message_sender: serial_message_sender.clone(),
 
             hardware_message_sender: hardware_message_sender.clone(),
         };
@@ -60,26 +60,24 @@ pub fn connect_brainworm_serial() -> BrainwormSerialInterface {
                 .open_native_async()
                 .expect("Failed to open brainworm serial port");
 
+        let BrainwormSerialState {
+            serial_message_sender: task_serial_message_sender,
+            hardware_message_sender: task_hardware_message_receiver,
+        } = app_state;
+
+        let mut task_hardware_message_receiver = task_hardware_message_receiver.subscribe();
+
         tokio::task::spawn(async move {
-            let BrainwormSerialState {
-                serial_message_sender,
-                hardware_message_sender,
-            } = app_state;
-
-            let hardware_message_sender = hardware_message_sender.clone();
-
-            let mut hardware_message_receiver = hardware_message_sender.subscribe();
-
             loop {
                 tokio::select! {
                     read_result = brainworm_serial_port.read_u8() => {
                         if let Ok(b'd') = read_result {
                             println!("brainworm serial: last move reported as complete");
 
-                            let _ = serial_message_sender.send(BrainwormSerialMessage::MoveDone);
+                            let _ = task_serial_message_sender.send(BrainwormSerialMessage::MoveDone);
                         }
                     }
-                    hardware_message = hardware_message_receiver.recv() => {
+                    hardware_message = task_hardware_message_receiver.recv() => {
                         match hardware_message {
                             Ok(HardwareMessage::MoveTo(position)) => {
                                 let position_index = position.get_robot_position_index();
@@ -89,9 +87,11 @@ pub fn connect_brainworm_serial() -> BrainwormSerialInterface {
                                 let _ = brainworm_serial_port.write(format!("p{position_index}\n").as_bytes()).await;
                             }
                             Ok(HardwareMessage::Grab(grip)) => {
-                                println!("brainworm serial: sending grip command 'g{}'", if grip {1} else {0});
+                                let grab = if grip {1} else {0};
 
-                                let _ = brainworm_serial_port.write(format!("g{}", if grip {1} else {0}).as_bytes()).await;
+                                println!("brainworm serial: sending grab command 'g{grab}'");
+
+                                let _ = brainworm_serial_port.write(format!("g{grab}").as_bytes()).await;
                             }
                             _ => {}
                         }
@@ -101,11 +101,14 @@ pub fn connect_brainworm_serial() -> BrainwormSerialInterface {
         });
 
         BrainwormSerialInterface {
-            serial_message_sender: server_message_sender,
+            serial_message_sender,
 
             hardware_message_sender,
         }
     });
+
+    // give the task a chance to start up
+    tokio::task::yield_now().await;
 
     interface.clone()
 }

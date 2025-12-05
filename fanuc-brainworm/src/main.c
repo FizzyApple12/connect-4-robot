@@ -78,6 +78,7 @@ void position()
     } while (moving);
 
     printf("d");
+    stdio_flush();
 }
 
 void grip()

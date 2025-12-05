@@ -2,6 +2,7 @@ use crate::hardware::{
     DispenseSide, PieceManipulator, PieceManipulatorError, PieceManipulatorPosition,
     physical::interfaces::{
         HardwareMessage,
+        desk_serial::{DeskSerialInterface, DeskSerialMessage, connect_desk_serial},
         fanuc_brainworm_serial::{
             BrainwormSerialInterface, BrainwormSerialMessage, connect_brainworm_serial,
         },
@@ -11,14 +12,19 @@ use std::time::Duration;
 
 pub struct PhysicalPieceManipulator {
     brainworm_serial_interface: BrainwormSerialInterface,
+
+    desk_serial_interface: DeskSerialInterface,
 }
 
 impl PieceManipulator for PhysicalPieceManipulator {
     async fn connect() -> Result<PhysicalPieceManipulator, PieceManipulatorError> {
-        let brainworm_serial_interface = connect_brainworm_serial();
+        let brainworm_serial_interface = connect_brainworm_serial().await;
+        let desk_serial_interface = connect_desk_serial().await;
 
         Ok(PhysicalPieceManipulator {
             brainworm_serial_interface,
+
+            desk_serial_interface,
         })
     }
 
@@ -67,12 +73,20 @@ impl PieceManipulator for PhysicalPieceManipulator {
     async fn board_release(&self, release: bool) -> Result<(), PieceManipulatorError> {
         println!("physical piece manipulator: board_release {:?}", release);
 
+        let serial_message_sender = self.desk_serial_interface.serial_message_sender.clone();
+
+        let mut serial_message_receiver = serial_message_sender.subscribe();
+
         let _ = self
-            .brainworm_serial_interface
+            .desk_serial_interface
             .hardware_message_sender
             .send(HardwareMessage::BoardRelease(release));
 
-        tokio::time::sleep(Duration::from_secs(1)).await;
+        loop {
+            if let Ok(DeskSerialMessage::BoardReleaseDone) = serial_message_receiver.recv().await {
+                break;
+            }
+        }
 
         Ok(())
     }
@@ -80,12 +94,23 @@ impl PieceManipulator for PhysicalPieceManipulator {
     async fn dispense(&self, side: DispenseSide) -> Result<(), PieceManipulatorError> {
         println!("physical piece manipulator: dispense {:?}", side);
 
-        let _ = self
-            .brainworm_serial_interface
-            .hardware_message_sender
-            .send(HardwareMessage::Dispense(side));
+        let serial_message_sender = self.desk_serial_interface.serial_message_sender.clone();
 
-        tokio::time::sleep(Duration::from_secs(1)).await;
+        let mut serial_message_receiver = serial_message_sender.subscribe();
+
+        let _ = self
+            .desk_serial_interface
+            .hardware_message_sender
+            .send(HardwareMessage::Dispense(side.clone()));
+
+        loop {
+            if let Ok(DeskSerialMessage::DispenseDone(complete_side)) =
+                serial_message_receiver.recv().await
+                && complete_side == side
+            {
+                break;
+            }
+        }
 
         Ok(())
     }

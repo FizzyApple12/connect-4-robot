@@ -80,6 +80,7 @@ void run_motion_task()
                 }
 
                 multicore_fifo_push_blocking(SERIAL_COMMAND_DISPENSE_DONE);
+                multicore_fifo_push_blocking(dispense_motor_number);
                 break;
             case MOTION_COMMAND_RELEASE:
                 release_position = multicore_fifo_pop_blocking();

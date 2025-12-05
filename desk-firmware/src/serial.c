@@ -35,6 +35,7 @@ void run_serial_task()
     char serial_command = 0;
 
     uint32_t fifo_command = 0;
+    uint32_t fifo_data = 0;
 
     char button_colour = 0;
     char button_status = 0;
@@ -59,7 +60,20 @@ void run_serial_task()
         if (serial_input != PICO_ERROR_TIMEOUT) {
             if (serial_command == 0)
             {
-                serial_command = (char) serial_input;
+                switch ((char) serial_input) {
+                    case 'b':
+                        serial_command = 'b';
+                        break;
+                    case 'd':
+                        serial_command = 'd';
+                        break;
+                    case 'r':
+                        serial_command = 'r';
+                        break;
+                    default:
+                        serial_command = 0;
+                        break;
+                }
             } else
             {
                 switch (serial_command)
@@ -67,7 +81,21 @@ void run_serial_task()
                     case 'b':
                         if (button_colour == 0)
                         {
-                            button_colour = (char) serial_input;
+                            switch ((char) serial_input) {
+                                case 'r':
+                                    button_colour = 'r';
+                                    break;
+                                case 'y':
+                                    button_colour = 'y';
+                                    break;
+                                case 'g':
+                                    button_colour = 'g';
+                                    break;
+                                default:
+                                    serial_command = 0;
+                                    button_colour = 0;
+                                    break;
+                            }
                         } else
                         {
                             switch ((char) serial_input)
@@ -87,12 +115,18 @@ void run_serial_task()
                             {
                                 case 'r':
                                     red_button_timer_cutoff = button_status;
+
+                                    gpio_put(RED_BUTTON_LED, flash_timer_progress < red_button_timer_cutoff);
                                     break;
                                 case 'y':
                                     yellow_button_timer_cutoff = button_status;
+
+                                    gpio_put(YELLOW_BUTTON_LED, flash_timer_progress < yellow_button_timer_cutoff);
                                     break;
                                 case 'g':
                                     green_button_timer_cutoff = button_status;
+
+                                    gpio_put(GREEN_BUTTON_LED, flash_timer_progress < green_button_timer_cutoff);
                                     break;
                                 default:
                                     break;
@@ -132,10 +166,22 @@ void run_serial_task()
             switch (fifo_command)
             {
                 case SERIAL_COMMAND_DISPENSE_DONE:
-                    printf("d\n");
+                    fifo_data = multicore_fifo_pop_blocking();
+
+                    if (fifo_data)
+                    {
+                        printf("d1");
+                    } else
+                    {
+                        printf("d0");
+                    }
+
+                    stdio_flush();
                     break;
                 case SERIAL_COMMAND_RELEASE_DONE:
-                    printf("r\n");
+                    printf("r");
+
+                    stdio_flush();
                     break;
             }
         }
@@ -151,17 +197,23 @@ void run_serial_task()
 
         if (red_button_pressed != red_button_pressed_last && red_button_pressed)
         {
-            printf("br\n");
+            printf("br");
+
+            stdio_flush();
         }
 
         if (yellow_button_pressed != yellow_button_pressed_last && !yellow_button_pressed)
         {
-            printf("by\n");
+            printf("by");
+
+            stdio_flush();
         }
 
         if (green_button_pressed != green_button_pressed_last && !green_button_pressed)
         {
-            printf("bg\n");
+            printf("bg");
+
+            stdio_flush();
         }
     }
 }

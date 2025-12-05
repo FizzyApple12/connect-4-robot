@@ -16,12 +16,17 @@ use crate::hardware::physical::piece_manipulator::PhysicalPieceManipulator;
 use crate::hardware::emulated::board_reader::EmulatedBoardReader;
 #[cfg(feature = "emulated-manipulator")]
 use crate::hardware::emulated::piece_manipulator::EmulatedPieceManipulator;
+
 #[cfg(feature = "emulated-ui")]
 use crate::hardware::emulated::user_interface::EmulatedUserInterface;
+#[cfg(feature = "physical-ui")]
+use crate::hardware::physical::user_interface::PhysicalUserInterface;
 
 pub struct GenericUserInterface {
     #[cfg(feature = "emulated-ui")]
     emulated: EmulatedUserInterface,
+    #[cfg(feature = "physical-ui")]
+    physical: PhysicalUserInterface,
 }
 
 impl UserInterface for GenericUserInterface {
@@ -29,6 +34,8 @@ impl UserInterface for GenericUserInterface {
         Ok(GenericUserInterface {
             #[cfg(feature = "emulated-ui")]
             emulated: EmulatedUserInterface::connect().await?,
+            #[cfg(feature = "physical-ui")]
+            physical: PhysicalUserInterface::connect().await?,
         })
     }
 
@@ -40,18 +47,14 @@ impl UserInterface for GenericUserInterface {
         #[cfg(feature = "emulated-ui")]
         return self.emulated.set_button_lights(button, pattern).await;
         #[cfg(feature = "physical-ui")]
-        todo!(
-            "generic user interface: set_button_lights {:?} {:?}",
-            button,
-            pattern
-        )
+        return self.physical.set_button_lights(button, pattern).await;
     }
 
     async fn wait_for_button(&self, button: UserInterfaceButton) -> Result<(), UserInterfaceError> {
         #[cfg(feature = "emulated-ui")]
         return self.emulated.wait_for_button(button).await;
         #[cfg(feature = "physical-ui")]
-        todo!("generic user interface: wait_for_button {:?}", button)
+        return self.physical.wait_for_button(button).await;
     }
 }
 

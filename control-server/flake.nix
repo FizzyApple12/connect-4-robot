@@ -6,15 +6,25 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = {
-    nixpkgs,
-    flake-utils,
-    ...
-  }:
-    flake-utils.lib.eachDefaultSystem (
-      system: let
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      ...
+    }:
+    {
+      nixosModules.default = nix/module.nix;
+      overlays.default = final: prev: {
+        control-server = final.callPackage nix/package.nix { };
+      };
+    }
+    // flake-utils.lib.eachDefaultSystem (
+      system:
+      let
         pkgs = nixpkgs.legacyPackages.${system};
-      in {
+      in
+      {
         devShells.default = pkgs.mkShell rec {
           nativeBuildInputs = with pkgs; [
             pkg-config
@@ -41,7 +51,7 @@
 
           RUSTC_VERSION = "nightly";
 
-          LIBCLANG_PATH = pkgs.lib.makeLibraryPath [pkgs.llvmPackages_latest.libclang.lib];
+          LIBCLANG_PATH = pkgs.lib.makeLibraryPath [ pkgs.llvmPackages_latest.libclang.lib ];
 
           shellHook = ''
             export PATH=$PATH:''${CARGO_HOME:-~/.cargo}/bin
@@ -60,7 +70,7 @@
           meta = {
             description = "Control Server for the Connect 4 Robot";
             homepage = "https://github.com/fizzyapple12/connect-4-robot";
-            maintainers = with pkgs.lib.maintainers; [fizzyapple12];
+            maintainers = with pkgs.lib.maintainers; [ fizzyapple12 ];
             mainProgram = "control_server";
             platforms = pkgs.lib.platforms.all;
           };

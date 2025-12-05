@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		563C293E2ECEC8D800436EF6 /* OpenCV in Frameworks */ = {isa = PBXBuildFile; productRef = 563C293D2ECEC8D800436EF6 /* OpenCV */; };
+		564870E32EE2E161002B8BDA /* NWWebSocket in Frameworks */ = {isa = PBXBuildFile; productRef = 564870E22EE2E161002B8BDA /* NWWebSocket */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				563C293E2ECEC8D800436EF6 /* OpenCV in Frameworks */,
+				564870E32EE2E161002B8BDA /* NWWebSocket in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -126,6 +128,7 @@
 			name = "vision-processor";
 			packageProductDependencies = (
 				563C293D2ECEC8D800436EF6 /* OpenCV */,
+				564870E22EE2E161002B8BDA /* NWWebSocket */,
 			);
 			productName = "vision-processor";
 			productReference = 563C28FD2ECEC63500436EF6 /* vision-processor.app */;
@@ -211,6 +214,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				563C29362ECEC7CE00436EF6 /* XCRemoteSwiftPackageReference "opencv-spm" */,
+				564870E12EE2E156002B8BDA /* XCRemoteSwiftPackageReference "NWWebSocket" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 563C28FE2ECEC63500436EF6 /* Products */;
@@ -639,6 +643,14 @@
 				minimumVersion = 4.12.0;
 			};
 		};
+		564870E12EE2E156002B8BDA /* XCRemoteSwiftPackageReference "NWWebSocket" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:pusher/NWWebSocket.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.7;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -646,6 +658,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 563C29362ECEC7CE00436EF6 /* XCRemoteSwiftPackageReference "opencv-spm" */;
 			productName = OpenCV;
+		};
+		564870E22EE2E161002B8BDA /* NWWebSocket */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 564870E12EE2E156002B8BDA /* XCRemoteSwiftPackageReference "NWWebSocket" */;
+			productName = NWWebSocket;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

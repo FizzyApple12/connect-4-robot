@@ -1,6 +1,15 @@
 {
-  "originHash" : "8e48cbf746f3364a238df97bffa6cc3383fcfeb545158731e0ec6ce8a819960e",
+  "originHash" : "8705a18863ac6edbbda89e2c5efa2b36cde547e2cd8829e6e69ade4c95624313",
   "pins" : [
+    {
+      "identity" : "nwwebsocket",
+      "kind" : "remoteSourceControl",
+      "location" : "git@github.com:pusher/NWWebSocket.git",
+      "state" : {
+        "revision" : "da32dcf230d9b627a9ef9d79b83605d12b3fbcbd",
+        "version" : "0.5.7"
+      }
+    },
     {
       "identity" : "opencv-spm",
       "kind" : "remoteSourceControl",

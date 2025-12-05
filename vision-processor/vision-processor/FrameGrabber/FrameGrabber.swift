@@ -3,41 +3,15 @@ import SwiftUI
 import NotificationCenter
 
 class FrameGrabber: NSObject, AVCapturePhotoCaptureDelegate {
-    let latestFrame: CGImage? = nil
-    
     private let captureSession = AVCaptureSession()
+    
+    private var captureDevice: AVCaptureDevice? = nil
+    
     private let photoOutput = AVCapturePhotoOutput()
     
     private var frameGrabbedNotificationName = NSNotification.Name("FrameGrabber.frameGrabbed");
     
     func initialise() async -> Bool {
-//        captureSession.beginConfiguration()
-//        
-//        let status = AVCaptureDevice.authorizationStatus(for: .video)
-//        
-//        var isAuthorized = status == .authorized
-//        
-//        if status == .notDetermined {
-//            isAuthorized = await AVCaptureDevice.requestAccess(for: .video)
-//        }
-//        
-//        if !isAuthorized { return false; }
-//        
-//        let videoDevice = AVCaptureDevice.default(for: .video)
-//        guard
-//            let videoDeviceInput = try? AVCaptureDeviceInput(device: videoDevice!),
-//            captureSession.canAddInput(videoDeviceInput)
-//        else { return false }
-//        
-//        captureSession.addInput(videoDeviceInput)
-//    
-//        guard captureSession.canAddOutput(photoOutput) else { return false }
-//        captureSession.sessionPreset = .photo
-//        captureSession.addOutput(photoOutput)
-//        captureSession.commitConfiguration()
-//        
-//        captureSession.startRunning()
-        
         let status = AVCaptureDevice.authorizationStatus(for: .video)
         
         var isAuthorized = status == .authorized
@@ -50,7 +24,9 @@ class FrameGrabber: NSObject, AVCapturePhotoCaptureDelegate {
         
         captureSession.beginConfiguration()
         
-        let captureDevice = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .back).devices.filter { $0.position == .back }.first
+        captureSession.sessionPreset = .photo
+        
+        captureDevice = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .back).devices.filter { $0.position == .back }.first
         
         guard
             let captureDevice = captureDevice,
@@ -58,8 +34,6 @@ class FrameGrabber: NSObject, AVCapturePhotoCaptureDelegate {
         else {
             return false
         }
-        
-        captureSession.sessionPreset = .photo
         
         guard captureSession.canAddInput(deviceInput) else {
             return false
@@ -69,21 +43,31 @@ class FrameGrabber: NSObject, AVCapturePhotoCaptureDelegate {
         }
         
         captureSession.addInput(deviceInput)
+        
         captureSession.addOutput(photoOutput)
         
         photoOutput.maxPhotoDimensions = deviceInput.device.activeFormat.supportedMaxPhotoDimensions.last!
 
         photoOutput.maxPhotoQualityPrioritization = .quality
-        photoOutput.isConstantColorEnabled = true
+//        photoOutput.isConstantColorEnabled = true
         
         captureSession.commitConfiguration()
         
         captureSession.startRunning()
         
+        try! captureDevice.lockForConfiguration()
+        
+        await captureDevice.setWhiteBalanceModeLocked(with: AVCaptureDevice.WhiteBalanceGains(redGain: 1.0, greenGain: 1.0, blueGain: 1.0))
+        
+        captureDevice.unlockForConfiguration()
+        
         return true
     }
     
-    func grab() {
+    func destroy() {
+    }
+    
+    func grab() async {
         let settings = AVCapturePhotoSettings()
 //        let previewPixelType = settings.availablePreviewPhotoPixelFormatTypes.first!
 //        let previewFormat = [kCVPixelBufferPixelFormatTypeKey as String: previewPixelType,
@@ -92,10 +76,19 @@ class FrameGrabber: NSObject, AVCapturePhotoCaptureDelegate {
 //        settings.previewPhotoFormat = previewFormat
 //        settings.format =
         settings.flashMode = .on
-        settings.isConstantColorEnabled = true
-        settings.isConstantColorFallbackPhotoDeliveryEnabled = false
+//        settings.isConstantColorEnabled = true
+//        settings.isConstantColorFallbackPhotoDeliveryEnabled = false
         settings.photoQualityPrioritization = .quality
         settings.maxPhotoDimensions = photoOutput.maxPhotoDimensions
+        
+//        guard
+//            let captureDevice = captureDevice
+//        else {
+//            return
+//        }
+        
+//        await captureDevice.setExposureModeCustom(duration: captureDevice.activeFormat.minExposureDuration, iso: 100)
+//        await captureDevice.setExposureTargetBias(captureDevice.minExposureTargetBias)
         
         photoOutput.capturePhoto(with: settings, delegate: self)
     }
@@ -126,7 +119,7 @@ class FrameGrabber: NSObject, AVCapturePhotoCaptureDelegate {
         return { NotificationCenter.default.removeObserver(observer) }
         
     }
-    private func emitFrameGrabbed(_ message: CGImage) {
-        NotificationCenter.default.post(name: frameGrabbedNotificationName, object: message)
+    private func emitFrameGrabbed(_ frame: CGImage) {
+        NotificationCenter.default.post(name: frameGrabbedNotificationName, object: frame)
     }
 }

@@ -7,7 +7,7 @@ enum ServerConnectionState {
     case connected(ip: String, websocketConnection: URLSessionWebSocketTask)
 }
 
-class ServerConnector: NSObject {
+class ServerConnector: NSObject, URLSessionWebSocketDelegate {
     var connectionState: ServerConnectionState {
         get {
             internalConnectionState
@@ -22,18 +22,18 @@ class ServerConnector: NSObject {
     func connect(ip: String) {
         disconnect()
         
-        let urlString = "ws://\(ip):8976"
+        let urlString = "ws://\(ip):4226/board_reader"
+        
+        print("url: \(urlString)")
         
         if let url = URL(string: urlString) {
-            let request = URLRequest(url: url)
             let session = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
             
-            let webSocket = session.webSocketTask(with: request)
+            let webSocket = session.webSocketTask(with: url)
             
-            // todo: fix data race here
-//            internalConnectionState = ServerConnectionState.connecting(ip: ip, websocketConnection: webSocket)
-//
-//            emitConnectionStateChangedNotification()
+            internalConnectionState = ServerConnectionState.connecting(ip: ip, websocketConnection: webSocket)
+            
+            emitConnectionStateChangedNotification()
             
             webSocket.resume()
             
@@ -43,9 +43,21 @@ class ServerConnector: NSObject {
     
     func disconnect() {
         switch internalConnectionState {
-        case let .connecting(_, websocketConnection),
-            let .connected(_, websocketConnection):
+        case let .connecting(_, websocketConnection):
+            websocketConnection.cancel()
+            
+            internalConnectionState = ServerConnectionState.disconnected
+            
+            emitConnectionStateChangedNotification()
+            break;
+            
+        case let .connected(_, websocketConnection):
             websocketConnection.cancel(with: .goingAway, reason: nil)
+            
+            internalConnectionState = ServerConnectionState.disconnected
+            
+            emitConnectionStateChangedNotification()
+            break;
         default:
             internalConnectionState = ServerConnectionState.disconnected
             
@@ -106,7 +118,7 @@ class ServerConnector: NSObject {
                 self?.receiveMessage()
             })
         default:
-            print("Cannot receives message unless we are connected")
+            print("Cannot receive message unless we are connected")
         }
     }
     
@@ -132,9 +144,7 @@ class ServerConnector: NSObject {
             print("Error during JSON serialize: \(error)")
         }
     }
-}
-
-extension ServerConnector: URLSessionWebSocketDelegate {
+    
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         switch internalConnectionState {
         case let .connecting(ip, websocketConnection),

@@ -71,7 +71,7 @@
             description = "Control Server for the Connect 4 Robot";
             homepage = "https://github.com/fizzyapple12/connect-4-robot";
             maintainers = with pkgs.lib.maintainers; [ fizzyapple12 ];
-            mainProgram = "control_server";
+            mainProgram = "control-server";
             platforms = pkgs.lib.platforms.all;
           };
         };

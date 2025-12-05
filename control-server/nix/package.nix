@@ -1,13 +1,12 @@
 {
   lib,
-  rustPlatform,
+  rustPackages_1_89, # Borrowed from https://github.com/NixOS/nixpkgs/pull/459771/files
   pkg-config,
   systemd,
   openssl,
   cmake,
   clang,
   llvmPackages,
-  rustup,
   yaml-language-server,
   fontconfig,
   vulkan-loader,
@@ -19,11 +18,11 @@
   llvmPackages_latest,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPackages_1_89.rustPlatform.buildRustPackage rec {
   pname = "control-server";
   version = "1.0.0";
-  cargoLock.lockFile = ./Cargo.lock;
-  src = lib.cleanSource ./.;
+  cargoLock.lockFile = ../Cargo.lock;
+  src = lib.cleanSource ../.;
 
   nativeBuildInputs = [
     pkg-config
@@ -32,7 +31,7 @@ rustPlatform.buildRustPackage rec {
     cmake
     clang
     llvmPackages.bintools
-    rustup
+
     yaml-language-server
     fontconfig
     vulkan-loader
@@ -51,11 +50,6 @@ rustPlatform.buildRustPackage rec {
   RUSTC_VERSION = "nightly";
 
   LIBCLANG_PATH = lib.makeLibraryPath [ llvmPackages_latest.libclang.lib ];
-
-  shellHook = ''
-    export PATH=$PATH:''${CARGO_HOME:-~/.cargo}/bin
-    export PATH=$PATH:''${RUSTUP_HOME:-~/.rustup}/toolchains/$RUSTC_VERSION-x86_64-unknown-linux-gnu/bin/
-  '';
 
   LD_LIBRARY_PATH = lib.makeLibraryPath nativeBuildInputs;
 

@@ -7,7 +7,6 @@
 with lib;
 let
   cfg = config.services.control-server;
-  externalStateDir = "/var/lib/control-server";
 in
 {
   options.services.control-server = {
@@ -52,48 +51,11 @@ in
         description = "Connect 4 Robot Control Server";
         wantedBy = [ "multi-user.target" ];
 
-        environment = {
-        };
-
         serviceConfig = {
           Type = "simple";
           ExecStart = command;
-          # Hardening options
           User = cfg.user;
           Group = cfg.group;
-          RuntimeDirectory = [ "control-server" ];
-          RuntimeDirectoryMode = "0700";
-          StateDirectory = [ "control-server" ];
-          StateDirectoryMode = "0700";
-          WorkingDirectory = externalStateDir;
-          BindReadOnlyPaths = [
-            "/nix/store"
-            "-/etc/resolv.conf"
-            "-/etc/nsswitch.conf"
-            "-/etc/group"
-            "-/etc/hosts"
-            "-/etc/localtime"
-          ];
-          TemporaryFileSystem = "/:ro";
-          PrivateTmp = true;
-          PrivateDevices = true;
-          ProtectKernelTunables = true;
-          ProtectControlGroups = true;
-          RestrictSUIDSGID = true;
-          PrivateMounts = true;
-          ProtectKernelModules = true;
-          ProtectKernelLogs = true;
-          ProtectHostname = true;
-          ProtectClock = true;
-          ProtectProc = "invisible";
-          ProcSubset = "pid";
-          RestrictNamespaces = true;
-          RemoveIPC = true;
-          UMask = "0077";
-          NoNewPrivileges = true;
-          LockPersonality = true;
-          RestrictRealtime = true;
-          MemoryDenyWriteExecute = true;
         };
       };
 
@@ -103,7 +65,6 @@ in
       users.users.controlserver = lib.mkIf (cfg.user == "controlserver" && cfg.group == "controlserver") {
         description = "Service user for control-server";
         group = "controlserver";
-        home = externalStateDir;
         isSystemUser = true;
       };
     }

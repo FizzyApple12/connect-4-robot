@@ -1,4 +1,6 @@
 {
+  config,
+  lib,
   pkgs,
   ...
 }:
@@ -37,6 +39,8 @@
   ];
 
   services.openssh.enable = true;
+
+  services.control-server.enable = true;
 
   system.stateVersion = "25.05";
 }

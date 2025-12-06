@@ -56,6 +56,10 @@ in
           ExecStart = command;
           User = cfg.user;
           Group = cfg.group;
+          Restart = "on-failure";
+          RestartSec = "10s";
+          StartLimitIntervalSec = "60s";
+          StartLimitBurst = 120;
         };
       };
 

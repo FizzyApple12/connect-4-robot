@@ -1,15 +1,11 @@
 nonisolated enum ServerIncomingMessageType: String, Codable {
-    case ping
-    case pong
-//    case calibrate
-    case capture
+//    case Calibrate
+    case Capture
 }
 
 nonisolated enum ServerIncomingMessage: Codable {
-    case ping
-    case pong
-//    case calibrate
-    case capture
+//    case Calibrate
+    case Capture
 
     private enum CodingKeys: String, CodingKey {
         case type
@@ -20,14 +16,10 @@ nonisolated enum ServerIncomingMessage: Codable {
         let type = try container.decode(ServerIncomingMessageType.self, forKey: .type)
         
         switch type {
-        case .ping:
-            self = .ping
-        case .pong:
-            self = .pong
-//        case .calibrate:
-//            self = .calibrate
-        case .capture:
-            self = .capture
+//        case .Calibrate:
+//            self = .Calibrate
+        case .Capture:
+            self = .Capture
         }
     }
     
@@ -35,14 +27,10 @@ nonisolated enum ServerIncomingMessage: Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
             
         switch self {
-        case .ping:
-            try container.encode(ServerIncomingMessageType.ping, forKey: .type)
-        case .pong:
-            try container.encode(ServerIncomingMessageType.pong, forKey: .type)
-//        case .calibrate:
-//            try container.encode(ServerIncomingMessageType.calibrate, forKey: .type)
-        case .capture:
-            try container.encode(ServerIncomingMessageType.capture, forKey: .type)
+//        case .Calibrate:
+//            try container.encode(ServerIncomingMessageType.Calibrate, forKey: .type)
+        case .Capture:
+            try container.encode(ServerIncomingMessageType.Capture, forKey: .type)
         }
     }
 }

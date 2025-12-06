@@ -1,6 +1,6 @@
 import NotificationCenter;
 import Foundation;
-import NWWebSocket;
+import Starscream
 import Network;
 
 //enum ServerConnectionState {
@@ -11,12 +11,12 @@ import Network;
 
 enum ServerConnectionState {
     case disconnected
-    case connecting(ip: String, websocketConnection: NWWebSocket)
-    case connected(ip: String, websocketConnection: NWWebSocket)
+    case connecting(ip: String, websocketConnection: Starscream.WebSocket)
+    case connected(ip: String, websocketConnection: Starscream.WebSocket)
 }
 
 // , URLSessionWebSocketDelegate
-class ServerConnector: NSObject, WebSocketConnectionDelegate {
+class ServerConnector: NSObject, WebSocketDelegate {
     var connectionState: ServerConnectionState {
         get {
             internalConnectionState
@@ -27,19 +27,22 @@ class ServerConnector: NSObject, WebSocketConnectionDelegate {
     private var messageNotificationName = NSNotification.Name("ServerConnector.message");
     
     private var internalConnectionState: ServerConnectionState = ServerConnectionState.disconnected
+    private var lastValidUrl: URL?
     
     func connect(ip: String) {
         disconnect()
         
         let urlString = "ws://\(ip):4226/board_reader"
-        
         print("url: \(urlString)")
         
         if let url = URL(string: urlString) {
+            lastValidUrl = url
 //            let session = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
             
 //            let webSocket = session.webSocketTask(with: url)
-            let socket = NWWebSocket(url: url)
+            var req = URLRequest(url: url)
+            req.timeoutInterval = 5.0
+            let socket = WebSocket(request: req, certPinner: FoundationSecurity(allowSelfSigned: true))
             socket.delegate = self
             
             internalConnectionState = ServerConnectionState.connecting(ip: ip, websocketConnection: socket)
@@ -104,6 +107,51 @@ class ServerConnector: NSObject, WebSocketConnectionDelegate {
         NotificationCenter.default.post(name: messageNotificationName, object: message)
     }
     
+    func didReceive(event: WebSocketEvent, client: any WebSocketClient) {
+        switch event {
+        case .connected(let dictionary):
+            switch internalConnectionState {
+            case let .connecting(ip, websocketConnection):
+                fallthrough
+            case let .connected(ip, websocketConnection):
+                internalConnectionState = ServerConnectionState.connected(ip: ip, websocketConnection: websocketConnection)
+                
+                emitConnectionStateChangedNotification()
+                
+                break;
+            default:
+                self.disconnect()
+                break;
+            }
+        case .disconnected(let string, let uInt16):
+            self.disconnect()
+        case .text(let string):
+            print("message: \(string)")
+            handleRecvMsg(Data(string.utf8))
+        case .binary(let data):
+            print("message: \(data)")
+            handleRecvMsg(data)
+        case .pong(let data):
+            break
+        case .ping(let data):
+            client.write(pong: data ?? Data())
+        case .error(let error):
+            self.disconnect()
+        case .viabilityChanged(let bool):
+            if !bool {
+                self.disconnect()
+            }
+        case .reconnectSuggested(let bool):
+            if bool, let lastValidUrl {
+                self.connect(ip: lastValidUrl.absoluteString)
+            }
+        case .cancelled:
+            self.disconnect()
+        case .peerClosed:
+            self.disconnect()
+        }
+    }
+    
 //    func receiveMessage() {
 //        switch internalConnectionState {
 //        case let .connecting(_, websocketConnection),
@@ -151,7 +199,10 @@ class ServerConnector: NSObject, WebSocketConnectionDelegate {
 //                            // no-op
 //                        }
 //                    }
-                    websocketConnection.send(string: messageJSON)
+                    
+                    print("send: \(messageJSON)")
+                    
+                    websocketConnection.write(string: messageJSON)
                 default:
                     print("Cannot send message unless we are connected")
                 }
@@ -179,64 +230,17 @@ class ServerConnector: NSObject, WebSocketConnectionDelegate {
 //        
 //        emitConnectionStateChangedNotification()
 //    }
-    func webSocketDidConnect(connection: WebSocketConnection) {
-        switch internalConnectionState {
-        case let .connecting(ip, websocketConnection):
-            internalConnectionState = ServerConnectionState.connected(ip: ip, websocketConnection: websocketConnection)
-            
-            emitConnectionStateChangedNotification()
-            
-            break;
-            
-        case let .connected(ip, websocketConnection):
-            internalConnectionState = ServerConnectionState.connected(ip: ip, websocketConnection: websocketConnection)
-            
-            emitConnectionStateChangedNotification()
-            
-            break;
-        default:
-            self.disconnect()
-            break;
-        }
-    }
-
-    func webSocketDidDisconnect(connection: WebSocketConnection, closeCode: NWProtocolWebSocket.CloseCode, reason: Data?) {
-        self.disconnect()
-    }
     
-    func webSocketViabilityDidChange(connection: WebSocketConnection, isViable: Bool) {
-        if !isViable {
-            self.disconnect()
-        }
-    }
-
-    func webSocketDidAttemptBetterPathMigration(result: Result<WebSocketConnection, NWError>) {}
-
-    func webSocketDidReceiveError(connection: WebSocketConnection, error: NWError) {
-        self.disconnect()
-    }
-
-    func webSocketDidReceivePong(connection: WebSocketConnection) {}
-
-    func webSocketDidReceiveMessage(connection: WebSocketConnection, string: String) {
-        do {
-            let messageDecoder = JSONDecoder()
-        
-            let decodedMessage = try messageDecoder.decode(ServerIncomingMessage.self, from: Data(string.utf8))
-            self.emitMessageNotification(decodedMessage)
-        } catch {
-            print("Error during JSON deserialize: \(error)")
-        }
-    }
-
-    func webSocketDidReceiveMessage(connection: WebSocketConnection, data: Data) {
-        do {
-            let messageDecoder = JSONDecoder()
-        
-            let decodedMessage = try messageDecoder.decode(ServerIncomingMessage.self, from: data)
-            self.emitMessageNotification(decodedMessage)
-        } catch {
-            print("Error during JSON deserialize: \(error)")
+    private func handleRecvMsg(_ msg: Data) {
+//        do {
+//            let decodedMessage = try JSONDecoder().decode(ServerIncomingMessage.self, from: msg)
+//        } catch {
+//            print("Error during JSON deserialize: \(error)")
+//        }
+        if msg == Data("\"Capture\"".utf8) {
+            self.emitMessageNotification(ServerIncomingMessage.Capture)
+        } else {
+            print("Error during JSON deserialize: what")
         }
     }
 }

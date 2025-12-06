@@ -40,7 +40,7 @@ struct vision_processorApp: App {
     }
     
     func onServerMessage(_ incomingMessage: ServerIncomingMessage) {
-        if incomingMessage == ServerIncomingMessage.capture {
+        if incomingMessage == ServerIncomingMessage.Capture {
             pipelineTarget = .normal
             
             Task {
@@ -60,7 +60,7 @@ struct vision_processorApp: App {
     }
     
     func onPipelineResults(_ boardState: [[GamePieceType]], _ debugFrame: CGImage, _ debugText: String) {
-        
+        serverConnector.sendMessage(ServerOutgoingMessage.init(CaptureResults: CaptureResultsType(state: boardState)))
     }
     
     var body: some Scene {

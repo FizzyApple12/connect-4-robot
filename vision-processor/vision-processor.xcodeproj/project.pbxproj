@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		563C293E2ECEC8D800436EF6 /* OpenCV in Frameworks */ = {isa = PBXBuildFile; productRef = 563C293D2ECEC8D800436EF6 /* OpenCV */; };
-		564870E32EE2E161002B8BDA /* NWWebSocket in Frameworks */ = {isa = PBXBuildFile; productRef = 564870E22EE2E161002B8BDA /* NWWebSocket */; };
+		5648714D2EE39B04002B8BDA /* Starscream in Frameworks */ = {isa = PBXBuildFile; productRef = 5648714C2EE39B04002B8BDA /* Starscream */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,11 +32,63 @@
 		563C28FD2ECEC63500436EF6 /* vision-processor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "vision-processor.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		563C290A2ECEC63700436EF6 /* vision-processorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "vision-processorTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		563C29142ECEC63700436EF6 /* vision-processorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "vision-processorUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		564870FD2EE39A94002B8BDA /* ExtensionFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExtensionFoundation.framework; path = System/Library/Frameworks/ExtensionFoundation.framework; sourceTree = SDKROOT; };
+		564870FE2EE39A94002B8BDA /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		564870FF2EE39A94002B8BDA /* DeviceCheck.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceCheck.framework; path = System/Library/Frameworks/DeviceCheck.framework; sourceTree = SDKROOT; };
+		564871002EE39A94002B8BDA /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
+		564871012EE39A94002B8BDA /* CryptoKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoKit.framework; path = System/Library/Frameworks/CryptoKit.framework; sourceTree = SDKROOT; };
+		564871022EE39A94002B8BDA /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
+		564871032EE39A94002B8BDA /* CryptoTokenKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoTokenKit.framework; path = System/Library/Frameworks/CryptoTokenKit.framework; sourceTree = SDKROOT; };
+		564871042EE39A94002B8BDA /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
+		564871052EE39A94002B8BDA /* EventKitUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EventKitUI.framework; path = System/Library/Frameworks/EventKitUI.framework; sourceTree = SDKROOT; };
+		564871062EE39A94002B8BDA /* ExposureNotification.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExposureNotification.framework; path = System/Library/Frameworks/ExposureNotification.framework; sourceTree = SDKROOT; };
+		564871072EE39A94002B8BDA /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
+		564871082EE39A94002B8BDA /* EventKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EventKit.framework; path = System/Library/Frameworks/EventKit.framework; sourceTree = SDKROOT; };
+		564871092EE39A94002B8BDA /* DeviceDiscoveryUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceDiscoveryUI.framework; path = System/Library/Frameworks/DeviceDiscoveryUI.framework; sourceTree = SDKROOT; };
+		5648710A2EE39A94002B8BDA /* CoreNFC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreNFC.framework; path = System/Library/Frameworks/CoreNFC.framework; sourceTree = SDKROOT; };
+		5648710B2EE39A94002B8BDA /* DeviceDiscoveryExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceDiscoveryExtension.framework; path = System/Library/Frameworks/DeviceDiscoveryExtension.framework; sourceTree = SDKROOT; };
+		5648710C2EE39A94002B8BDA /* CoreMediaIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMediaIO.framework; path = System/Library/Frameworks/CoreMediaIO.framework; sourceTree = SDKROOT; };
+		5648710D2EE39A94002B8BDA /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		5648710E2EE39A94002B8BDA /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		5648710F2EE39A94002B8BDA /* DataDetection.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DataDetection.framework; path = System/Library/Frameworks/DataDetection.framework; sourceTree = SDKROOT; };
+		564871102EE39A94002B8BDA /* ExternalAccessory.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExternalAccessory.framework; path = System/Library/Frameworks/ExternalAccessory.framework; sourceTree = SDKROOT; };
+		564871112EE39A94002B8BDA /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = System/Library/Frameworks/CoreHaptics.framework; sourceTree = SDKROOT; };
+		564871122EE39A94002B8BDA /* DockKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DockKit.framework; path = System/Library/Frameworks/DockKit.framework; sourceTree = SDKROOT; };
+		564871132EE39A94002B8BDA /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		564871142EE39A94002B8BDA /* CoreML.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreML.framework; path = System/Library/Frameworks/CoreML.framework; sourceTree = SDKROOT; };
+		564871152EE39A94002B8BDA /* DeveloperToolsSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeveloperToolsSupport.framework; path = System/Library/Frameworks/DeveloperToolsSupport.framework; sourceTree = SDKROOT; };
+		564871162EE39A94002B8BDA /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
+		564871172EE39A94002B8BDA /* CoreSpotlight.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreSpotlight.framework; path = System/Library/Frameworks/CoreSpotlight.framework; sourceTree = SDKROOT; };
+		564871182EE39A94002B8BDA /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
+		564871192EE39A94002B8BDA /* ExtensionKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExtensionKit.framework; path = System/Library/Frameworks/ExtensionKit.framework; sourceTree = SDKROOT; };
+		5648711A2EE39A94002B8BDA /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
+		5648711B2EE39A94002B8BDA /* CreateML.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CreateML.framework; path = System/Library/Frameworks/CreateML.framework; sourceTree = SDKROOT; };
+		5648711C2EE39A94002B8BDA /* CoreTransferable.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTransferable.framework; path = System/Library/Frameworks/CoreTransferable.framework; sourceTree = SDKROOT; };
+		5648711D2EE39A94002B8BDA /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
+		5648711E2EE39A94002B8BDA /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		5648711F2EE39A94002B8BDA /* CoreLocationUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocationUI.framework; path = System/Library/Frameworks/CoreLocationUI.framework; sourceTree = SDKROOT; };
+		564871202EE39A94002B8BDA /* DeclaredAgeRange.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeclaredAgeRange.framework; path = System/Library/Frameworks/DeclaredAgeRange.framework; sourceTree = SDKROOT; };
+		564871212EE39A94002B8BDA /* EnergyKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EnergyKit.framework; path = System/Library/Frameworks/EnergyKit.framework; sourceTree = SDKROOT; };
+		564871222EE39A94002B8BDA /* CreateMLComponents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CreateMLComponents.framework; path = System/Library/Frameworks/CreateMLComponents.framework; sourceTree = SDKROOT; };
+		564871232EE39A94002B8BDA /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5648714F2EE3A30D002B8BDA /* Exceptions for "vision-processor" folder in "vision-processor" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 563C28FC2ECEC63500436EF6 /* vision-processor */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		563C28FF2ECEC63500436EF6 /* vision-processor */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5648714F2EE3A30D002B8BDA /* Exceptions for "vision-processor" folder in "vision-processor" target */,
+			);
 			path = "vision-processor";
 			sourceTree = "<group>";
 		};
@@ -58,7 +110,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				563C293E2ECEC8D800436EF6 /* OpenCV in Frameworks */,
-				564870E32EE2E161002B8BDA /* NWWebSocket in Frameworks */,
+				5648714D2EE39B04002B8BDA /* Starscream in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,6 +155,45 @@
 		563C293C2ECEC8D800436EF6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				564871182EE39A94002B8BDA /* CoreBluetooth.framework */,
+				5648711E2EE39A94002B8BDA /* CoreData.framework */,
+				5648710D2EE39A94002B8BDA /* CoreFoundation.framework */,
+				564871132EE39A94002B8BDA /* CoreGraphics.framework */,
+				564871112EE39A94002B8BDA /* CoreHaptics.framework */,
+				564871042EE39A94002B8BDA /* CoreImage.framework */,
+				564871232EE39A94002B8BDA /* CoreLocation.framework */,
+				5648711F2EE39A94002B8BDA /* CoreLocationUI.framework */,
+				5648710E2EE39A94002B8BDA /* CoreMedia.framework */,
+				5648710C2EE39A94002B8BDA /* CoreMediaIO.framework */,
+				564871072EE39A94002B8BDA /* CoreMIDI.framework */,
+				564871142EE39A94002B8BDA /* CoreML.framework */,
+				564871002EE39A94002B8BDA /* CoreMotion.framework */,
+				5648710A2EE39A94002B8BDA /* CoreNFC.framework */,
+				564871162EE39A94002B8BDA /* CoreServices.framework */,
+				564871172EE39A94002B8BDA /* CoreSpotlight.framework */,
+				5648711D2EE39A94002B8BDA /* CoreTelephony.framework */,
+				5648711A2EE39A94002B8BDA /* CoreText.framework */,
+				5648711C2EE39A94002B8BDA /* CoreTransferable.framework */,
+				564870FE2EE39A94002B8BDA /* CoreVideo.framework */,
+				5648711B2EE39A94002B8BDA /* CreateML.framework */,
+				564871222EE39A94002B8BDA /* CreateMLComponents.framework */,
+				564871012EE39A94002B8BDA /* CryptoKit.framework */,
+				564871032EE39A94002B8BDA /* CryptoTokenKit.framework */,
+				5648710F2EE39A94002B8BDA /* DataDetection.framework */,
+				564871202EE39A94002B8BDA /* DeclaredAgeRange.framework */,
+				564871152EE39A94002B8BDA /* DeveloperToolsSupport.framework */,
+				564871022EE39A94002B8BDA /* DeviceActivity.framework */,
+				564870FF2EE39A94002B8BDA /* DeviceCheck.framework */,
+				5648710B2EE39A94002B8BDA /* DeviceDiscoveryExtension.framework */,
+				564871092EE39A94002B8BDA /* DeviceDiscoveryUI.framework */,
+				564871122EE39A94002B8BDA /* DockKit.framework */,
+				564871212EE39A94002B8BDA /* EnergyKit.framework */,
+				564871082EE39A94002B8BDA /* EventKit.framework */,
+				564871052EE39A94002B8BDA /* EventKitUI.framework */,
+				564871062EE39A94002B8BDA /* ExposureNotification.framework */,
+				564870FD2EE39A94002B8BDA /* ExtensionFoundation.framework */,
+				564871192EE39A94002B8BDA /* ExtensionKit.framework */,
+				564871102EE39A94002B8BDA /* ExternalAccessory.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -128,7 +219,7 @@
 			name = "vision-processor";
 			packageProductDependencies = (
 				563C293D2ECEC8D800436EF6 /* OpenCV */,
-				564870E22EE2E161002B8BDA /* NWWebSocket */,
+				5648714C2EE39B04002B8BDA /* Starscream */,
 			);
 			productName = "vision-processor";
 			productReference = 563C28FD2ECEC63500436EF6 /* vision-processor.app */;
@@ -214,7 +305,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				563C29362ECEC7CE00436EF6 /* XCRemoteSwiftPackageReference "opencv-spm" */,
-				564870E12EE2E156002B8BDA /* XCRemoteSwiftPackageReference "NWWebSocket" */,
+				5648714B2EE39B04002B8BDA /* XCRemoteSwiftPackageReference "Starscream" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 563C28FE2ECEC63500436EF6 /* Products */;
@@ -421,6 +512,7 @@
 				DEVELOPMENT_TEAM = T252VXU6GJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "vision-processor/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Connect 4 CV";
 				INFOPLIST_KEY_NSCameraUsageDescription = "used for capturing images for automated vision processing";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "used to connect to the robot server for communicating cv results";
@@ -461,6 +553,7 @@
 				DEVELOPMENT_TEAM = T252VXU6GJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "vision-processor/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Connect 4 CV";
 				INFOPLIST_KEY_NSCameraUsageDescription = "used for capturing images for automated vision processing";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "used to connect to the robot server for communicating cv results";
@@ -643,12 +736,12 @@
 				minimumVersion = 4.12.0;
 			};
 		};
-		564870E12EE2E156002B8BDA /* XCRemoteSwiftPackageReference "NWWebSocket" */ = {
+		5648714B2EE39B04002B8BDA /* XCRemoteSwiftPackageReference "Starscream" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:pusher/NWWebSocket.git";
+			repositoryURL = "https://github.com/daltoniam/Starscream.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.5.7;
+				minimumVersion = 4.0.8;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -659,10 +752,10 @@
 			package = 563C29362ECEC7CE00436EF6 /* XCRemoteSwiftPackageReference "opencv-spm" */;
 			productName = OpenCV;
 		};
-		564870E22EE2E161002B8BDA /* NWWebSocket */ = {
+		5648714C2EE39B04002B8BDA /* Starscream */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 564870E12EE2E156002B8BDA /* XCRemoteSwiftPackageReference "NWWebSocket" */;
-			productName = NWWebSocket;
+			package = 5648714B2EE39B04002B8BDA /* XCRemoteSwiftPackageReference "Starscream" */;
+			productName = Starscream;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

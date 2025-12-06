@@ -1,15 +1,6 @@
 {
-  "originHash" : "8705a18863ac6edbbda89e2c5efa2b36cde547e2cd8829e6e69ade4c95624313",
+  "originHash" : "d9897624366c05f484fb991f3dd0d7dc739eee826a2ab679e460d0f8de055275",
   "pins" : [
-    {
-      "identity" : "nwwebsocket",
-      "kind" : "remoteSourceControl",
-      "location" : "git@github.com:pusher/NWWebSocket.git",
-      "state" : {
-        "revision" : "da32dcf230d9b627a9ef9d79b83605d12b3fbcbd",
-        "version" : "0.5.7"
-      }
-    },
     {
       "identity" : "opencv-spm",
       "kind" : "remoteSourceControl",
@@ -17,6 +8,15 @@
       "state" : {
         "revision" : "141d91be1f53990b4f5d63e1373afba539a7914d",
         "version" : "4.12.0"
+      }
+    },
+    {
+      "identity" : "starscream",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/daltoniam/Starscream.git",
+      "state" : {
+        "revision" : "c6bfd1af48efcc9a9ad203665db12375ba6b145a",
+        "version" : "4.0.8"
       }
     }
   ],

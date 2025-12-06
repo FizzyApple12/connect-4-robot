@@ -17,7 +17,7 @@ struct ContentView: View {
     @Binding var visionPipeline: VisionPipeline
     
     // internal state
-    @State private var serverIpSetting: String = "192.168.1.1"
+    @AppStorage("serverIp") private var serverIpSetting: String = "192.168.1.1"
     @FocusState private var serverIpSettingFieldIsFocused: Bool
     @FocusState private var keyboardServerIpSettingFieldIsFocused: Bool
     

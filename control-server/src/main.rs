@@ -114,71 +114,81 @@ async fn next_state(state: MainLoopState) -> MainLoopState {
                 .await;
 
             let _ = piece_manipulator
-                .move_to(PieceManipulatorPosition::Capture)
+                .move_to(PieceManipulatorPosition::Home)
                 .await;
-
-            let board_state = match board_reader.capture().await {
-                Ok(board_state) => board_state,
-                Err(err) => {
-                    println!("failed to read board, retrying in 1 second: {err:#?}");
-
-                    tokio::time::sleep(Duration::from_secs(1)).await;
-
-                    return MainLoopState::ResettingBoard {
-                        user_interface,
-                        piece_manipulator,
-                        board_reader,
-                    };
-                }
-            };
-
-            println!("board: {board_state:#?}");
 
             let _ = piece_manipulator.board_release(true).await;
 
-            for (column_index, board_column) in board_state.state.iter().enumerate() {
-                for piece in board_column.iter().rev() {
-                    if *piece == GamePiece::Blank {
-                        continue;
-                    }
-
-                    let _ = piece_manipulator
-                        .move_to(PieceManipulatorPosition::ColumnPickUp(column_index))
-                        .await;
-
-                    let _ = piece_manipulator.grab(true).await;
-
-                    let _ = piece_manipulator
-                        .move_to(PieceManipulatorPosition::Home)
-                        .await;
-
-                    match *piece {
-                        ROBOT_PIECE => {
-                            let _ = piece_manipulator
-                                .move_to(PieceManipulatorPosition::SelfDropOff)
-                                .await;
-                        }
-                        OPPONENT_PIECE => {
-                            let _ = piece_manipulator
-                                .move_to(PieceManipulatorPosition::OpponentDropOff)
-                                .await;
-                        }
-                        GamePiece::Blank => {}
-                    }
-
-                    let _ = piece_manipulator.grab(false).await;
-
-                    let _ = piece_manipulator
-                        .move_to(PieceManipulatorPosition::Home)
-                        .await;
-                }
-            }
+            tokio::time::sleep(Duration::from_secs(10)).await;
 
             let _ = piece_manipulator.board_release(false).await;
 
-            let _ = piece_manipulator
-                .move_to(PieceManipulatorPosition::Home)
-                .await;
+            // let _ = piece_manipulator
+            //     .move_to(PieceManipulatorPosition::Capture)
+            //     .await;
+
+            // let board_state = match board_reader.capture().await {
+            //     Ok(board_state) => board_state,
+            //     Err(err) => {
+            //         println!("failed to read board, retrying in 1 second: {err:#?}");
+
+            //         tokio::time::sleep(Duration::from_secs(1)).await;
+
+            //         return MainLoopState::ResettingBoard {
+            //             user_interface,
+            //             piece_manipulator,
+            //             board_reader,
+            //         };
+            //     }
+            // };
+
+            // println!("board: {board_state:#?}");
+
+            // let _ = piece_manipulator.board_release(true).await;
+
+            // for (column_index, board_column) in board_state.state.iter().enumerate() {
+            //     for piece in board_column.iter().rev() {
+            //         if *piece == GamePiece::Blank {
+            //             continue;
+            //         }
+
+            //         let _ = piece_manipulator
+            //             .move_to(PieceManipulatorPosition::ColumnPickUp(column_index))
+            //             .await;
+
+            //         let _ = piece_manipulator.grab(true).await;
+
+            //         let _ = piece_manipulator
+            //             .move_to(PieceManipulatorPosition::Home)
+            //             .await;
+
+            //         match *piece {
+            //             ROBOT_PIECE => {
+            //                 let _ = piece_manipulator
+            //                     .move_to(PieceManipulatorPosition::SelfDropOff)
+            //                     .await;
+            //             }
+            //             OPPONENT_PIECE => {
+            //                 let _ = piece_manipulator
+            //                     .move_to(PieceManipulatorPosition::OpponentDropOff)
+            //                     .await;
+            //             }
+            //             GamePiece::Blank => {}
+            //         }
+
+            //         let _ = piece_manipulator.grab(false).await;
+
+            //         let _ = piece_manipulator
+            //             .move_to(PieceManipulatorPosition::Home)
+            //             .await;
+            //     }
+            // }
+
+            // let _ = piece_manipulator.board_release(false).await;
+
+            // let _ = piece_manipulator
+            //     .move_to(PieceManipulatorPosition::Home)
+            //     .await;
 
             MainLoopState::ReadyToStart {
                 user_interface,

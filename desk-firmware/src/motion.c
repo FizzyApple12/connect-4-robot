@@ -65,6 +65,8 @@ void run_motion_task()
                     sleep_us(DISPENSE_STEP_FREQUENCY);
                 }
 
+                sleep_ms(500);
+
                 gpio_put(dir_pin, false);
 
                 sleep_ms(1);

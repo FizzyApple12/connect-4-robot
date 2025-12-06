@@ -57,7 +57,7 @@ rustPackages_1_89.rustPlatform.buildRustPackage rec {
     description = "Control Server for the Connect 4 Robot";
     homepage = "https://github.com/fizzyapple12/connect-4-robot";
     maintainers = with lib.maintainers; [ fizzyapple12 ];
-    mainProgram = "control_server";
+    mainProgram = "control-server";
     platforms = lib.platforms.all;
   };
 }

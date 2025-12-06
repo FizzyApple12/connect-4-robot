@@ -7,6 +7,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ./router.nix
   ];
 
   # Enable Nix Flakes

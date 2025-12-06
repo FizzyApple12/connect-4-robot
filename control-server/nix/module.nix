@@ -66,6 +66,11 @@ in
         description = "Service user for control-server";
         group = "controlserver";
         isSystemUser = true;
+        extraGroups = [
+          "dialout"
+          "input"
+          "plugdev"
+        ];
       };
     }
   );
